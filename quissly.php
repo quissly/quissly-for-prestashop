@@ -77,7 +77,7 @@ class Quissly extends Module
     {
         $this->name = 'quissly';
         $this->tab = 'search_filter';
-        $this->version = '1.0.3';
+        $this->version = '1.0.4';
         $this->author = 'Quissly';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -345,6 +345,10 @@ class Quissly extends Module
         try {
             if ($this->context->controller instanceof FrontController) {
                 \Quissly\PrestaShop\Storefront\Page::assets($this->context->controller, $this->_path);
+                // The cron's work every few minutes while shoppers visit, for a shop without a server cron.
+                if (!$this->context->controller instanceof QuisslyCronModuleFrontController) {
+                    \Quissly\PrestaShop\Platform\VisitTick::maybe();
+                }
             }
         } catch (\Throwable $e) {
             return '';

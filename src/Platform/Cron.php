@@ -30,9 +30,10 @@ final class Cron
         return $given !== '' && hash_equals(self::token(), $given);
     }
 
-    public static function url(): string
+    /** @param array<string, scalar> $extra more query parameters (VisitTick's `visit`) */
+    public static function url(array $extra = []): string
     {
-        return \Context::getContext()->link->getModuleLink('quissly', 'cron', ['token' => self::token()], true);
+        return \Context::getContext()->link->getModuleLink('quissly', 'cron', ['token' => self::token()] + $extra, true);
     }
 
     private function __construct()

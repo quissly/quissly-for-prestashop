@@ -61,8 +61,9 @@ with its own secret token; it looks like this:
 ```
 
 Add it under *Cron jobs* in your hosting panel (or to a server crontab). The Dashboard then says
-**Running**. Without it, changed products are sent a few at a time whenever someone opens a page of
-the back office, or at once when you press a sync button on the Dashboard.
+**Running**. Without it, changed products are sent every few minutes while shoppers visit your shop,
+whenever someone opens a page of the back office, or at once when you press a sync button on the
+Dashboard - so a shop nobody visits for a while waits that long.
 
 ## The Quissly menu
 
