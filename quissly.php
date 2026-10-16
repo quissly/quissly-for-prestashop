@@ -77,7 +77,7 @@ class Quissly extends Module
     {
         $this->name = 'quissly';
         $this->tab = 'search_filter';
-        $this->version = '1.0.1';
+        $this->version = '1.0.2';
         $this->author = 'Quissly';
         $this->need_instance = 0;
         $this->bootstrap = true;

@@ -30,7 +30,7 @@ use Quissly\PrestaShop\Sync\DbSyncStore;
 final class ConfigurationPage
 {
     /** The Features section's settings, in the other plugins' order. */
-    private const FEATURES = ['search_interception', 'enable_overlay', 'overlay_mount_selector', 'enable_quick', 'quick_style', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events'];
+    private const FEATURES = ['search_interception', 'enable_overlay', 'overlay_layout', 'overlay_mount_selector', 'enable_quick', 'quick_style', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events'];
 
     /** The settings drawn as switches; the rest of Settings::DEFAULTS are text, lists or selects. */
     private const SWITCHES = ['search_interception', 'enable_overlay', 'enable_quick', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'overlay_suggestions', 'overlay_recent', 'most_loved'];
@@ -95,6 +95,8 @@ final class ConfigurationPage
                 $value = trim((string) \Tools::getValue($id));
                 if ($id === 'most_loved_shown' || $id === 'most_loved_backups') {
                     $value = implode("\n", MostLoved::codes($value, $id === 'most_loved_shown' ? MostLoved::SHOWN : MostLoved::BACKUPS));
+                } elseif ($id === 'overlay_layout' && !in_array($value, Features::OVERLAY_LAYOUTS, true)) {
+                    $value = 'wide';
                 } elseif ($id === 'quick_style' && !in_array($value, ['rows', 'carousel'], true)) {
                     $value = 'rows';
                 } elseif ($id === 'update_check_every' && !in_array($value, ['5m', '30m', '1h', '6h', '12h', '1d', 'never'], true)) {
@@ -251,8 +253,8 @@ final class ConfigurationPage
                 $after .= '<p class="help-block q-config__plan">' . self::e(Text::t('quissly_search.plan_lacks_' . $lockedBy))
                     . ' <a href="' . self::e(Shop::adminUrl('AdminQuisslyBilling')) . '">' . self::e(Text::t('quissly_search.plan_add_in_billing')) . '</a></p>';
             }
-        } elseif ($id === 'quick_style' || $id === 'update_check_every') {
-            $options = $id === 'quick_style' ? ['rows', 'carousel'] : ['5m', '30m', '1h', '6h', '12h', '1d', 'never'];
+        } elseif ($id === 'quick_style' || $id === 'update_check_every' || $id === 'overlay_layout') {
+            $options = $id === 'quick_style' ? ['rows', 'carousel'] : ($id === 'overlay_layout' ? Features::OVERLAY_LAYOUTS : ['5m', '30m', '1h', '6h', '12h', '1d', 'never']);
             $control = '<select name="' . $name . '" id="' . $key . '" class="fixed-width-xxl">';
             foreach ($options as $option) {
                 $control .= '<option value="' . $option . '"' . ($value === $option ? ' selected' : '') . '>'

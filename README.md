@@ -83,6 +83,7 @@ the back office, or at once when you press a sync button on the Dashboard.
 |---|---|---|
 | **QSearch: Quissly answers storefront search** | on (set by Finish Setup) | Off = PrestaShop's own search. |
 | **Search overlay takes over the theme's search box** | on | Clicking your search box opens Quissly's search bar over the page. A theme without a search box gets a search button either way. |
+| **Search overlay layout** | Wide | *Wide* spans the screen and shows products in columns; *Center* is a compact panel in the middle of the screen. Phones look the same either way. |
 | **Search button mount point** | empty | Where that search button goes (a CSS selector); empty = chosen for you. |
 | **Voice search** | off | A microphone button (up to 5 seconds of speech). Needs your shop on HTTPS. |
 | **Image search** | off | A camera button; shoppers can also paste a photo. |

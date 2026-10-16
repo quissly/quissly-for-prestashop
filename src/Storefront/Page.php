@@ -66,6 +66,7 @@ final class Page
             'suggestions'    => $configured ? SearchSuggestions::forStorefront($store, $serviceId, Shop::httpGet(5), time(), $language, $main) : [],
             'chips'          => SearchSuggestions::buttonsForStorefront($store, $serviceId, Shop::httpGet(5), time(), $language, $main),
             'most_loved'     => $configured ? MostLovedCards::forShopper($store) : [],
+            'overlay_layout' => Features::overlayLayout(),
             'i18n'           => [
                 'search'             => $context->getTranslator()->trans('Search', [], 'Shop.Theme.Catalog'),
                 'clear'              => Text::t('quissly_search.sf_clear'),

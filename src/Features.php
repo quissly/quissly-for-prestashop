@@ -42,6 +42,12 @@ final class Features
     public const QUICK_STYLES = ['rows', 'carousel'];
 
     /**
+     * Search overlay layout (setting overlay_layout), the Shopify app's two: wide (the default)
+     * spans the screen from 750px of it, center is a compact 760px panel. Phones look the same.
+     */
+    public const OVERLAY_LAYOUTS = ['wide', 'center'];
+
+    /**
      * A switch the store's plan leaves out (PlanGate) is off whatever was saved, and says why.
      *
      * @param callable(string): mixed|null $read setting id -> stored value ('Y'/'N'/null)
@@ -77,6 +83,21 @@ final class Features
         $store = new DbSyncStore();
 
         return PlanGate::current($store, (new Onboarding($store, true, time()))->services());
+    }
+
+    /**
+     * The search overlay's layout: 'wide' (the default) or 'center'.
+     *
+     * @param callable(string): mixed|null $read setting id -> stored value
+     */
+    public static function overlayLayout(?callable $read = null): string
+    {
+        $read = $read ?? static function (string $id) {
+            return Registry::get('addons.quissly_search.' . $id);
+        };
+        $value = (string) $read('overlay_layout');
+
+        return in_array($value, self::OVERLAY_LAYOUTS, true) ? $value : self::OVERLAY_LAYOUTS[0];
     }
 
     /**

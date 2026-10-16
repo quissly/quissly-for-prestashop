@@ -15,6 +15,7 @@ final class Settings
         'search_interception'    => 'Y',
         'enable_overlay'         => 'Y',
         'overlay_mount_selector' => '',
+        'overlay_layout'         => 'wide',
         'enable_quick'           => 'N',
         'quick_style'            => 'rows',
         'enable_voice'           => 'N',
