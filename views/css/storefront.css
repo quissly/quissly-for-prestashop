@@ -1,0 +1,766 @@
+/* Quissly for PrestaShop - the storefront overlay, voice/image buttons and Most loved cards (from the CS-Cart add-on's styles.less). */
+/*
+ * quissly_search storefront styles: the search overlay (verbatim from
+ * the WooCommerce plugin's Quissly_Overlay, itself from the Magento plugin) and the
+ * voice/image buttons, both in the overlay bar and beside the theme's own search box.
+ * Plain CSS in a .less file (CS-Cart compiles theme styles as LESS): CSS functions
+ * LESS would evaluate itself, like min(), are escaped with ~"...".
+ */
+/* The bar sits at the top and spans the page, with the space below it kept for
+   suggestions (.quissly-overlay__results). */
+.quissly-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px clamp(16px, 3vw, 48px);
+  overflow-y: auto;
+  background: rgba(20, 20, 25, 0.45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+.quissly-overlay.is-open {
+  display: flex;
+  opacity: 1;
+}
+html.quissly-overlay-open {
+  overflow: hidden;
+}
+.quissly-overlay__panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transform: translateY(-8px) scale(0.985);
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.quissly-overlay.is-open .quissly-overlay__panel {
+  transform: none;
+}
+.quissly-overlay__bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+/* Above the bar's drop shadow, which would otherwise grey the card's top. */
+.quissly-overlay__results {
+  position: relative;
+  z-index: 1;
+}
+.quissly-overlay__results:empty {
+  display: none;
+}
+/* Search bar suggestions as buttons under the bar, while it is empty. */
+.quissly-overlay__suggest {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 20px 26px 22px;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.quissly-overlay__suggest[hidden] {
+  display: none;
+}
+.quissly-overlay .quissly-overlay__suggest-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid #ececf1;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1d1d22;
+}
+.quissly-overlay .quissly-overlay__suggest-title svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.quissly-overlay__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.quissly-overlay .quissly-overlay__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 9px 14px 9px 16px;
+  background: #fff;
+  color: #1d1d22;
+  border: 1px solid #ececf1;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.quissly-overlay .quissly-overlay__chip svg {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.quissly-overlay .quissly-overlay__chip:hover {
+  background: #fff;
+  color: #1d1d22;
+  border-color: #d6d6de;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+}
+.quissly-overlay .quissly-overlay__chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+}
+@media (max-width: 600px) {
+  .quissly-overlay__suggest {
+    padding: 16px 16px 18px;
+    border-radius: 18px;
+  }
+  .quissly-overlay .quissly-overlay__chip {
+    font-size: 14px;
+    padding: 8px 12px 8px 14px;
+  }
+}
+/* !important, same reasoning as .quissly-overlay__input: themes style bare buttons. */
+.quissly-overlay .quissly-overlay__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px 0 26px;
+  background: #fff;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.14);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+.quissly-overlay .quissly-overlay__field:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 26px 65px rgba(0, 0, 0, 0.36), 0 0 0 5px rgba(248, 246, 243, 0.6);
+}
+.quissly-overlay .quissly-overlay__icon {
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: #9a9aa4;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.18s ease;
+}
+.quissly-overlay .quissly-overlay__field:focus-within .quissly-overlay__icon {
+  stroke: #4b4b57;
+}
+.quissly-overlay .quissly-overlay__input,
+.quissly-overlay .quissly-overlay__input:focus,
+.quissly-overlay .quissly-overlay__input:hover {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  box-sizing: border-box !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 21px 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  font-family: inherit !important;
+  font-size: 20px !important;
+  line-height: 1.3 !important;
+  font-weight: 400 !important;
+  color: #1d1d22 !important;
+  letter-spacing: normal !important;
+}
+.quissly-overlay .quissly-overlay__input::placeholder {
+  color: #a3a3ad !important;
+  opacity: 1 !important;
+}
+.quissly-overlay-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.quissly-overlay-trigger svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.quissly-overlay-trigger[hidden] {
+  display: none;
+}
+.quissly-overlay-trigger:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.quissly-overlay-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+}
+.quissly-overlay-trigger--inline {
+  margin: 0 6px;
+  vertical-align: middle;
+}
+.quissly-overlay-trigger--floating {
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  z-index: 9998;
+  width: 46px;
+  height: 46px;
+  background: #fff;
+  color: #4b4b57;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.quissly-overlay-trigger--floating:hover {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+@media (max-width: 480px) {
+  .quissly-overlay-trigger {
+    width: 40px;
+    height: 40px;
+  }
+  .quissly-overlay-trigger--inline {
+    margin: 0 2px;
+  }
+  .quissly-overlay-trigger--floating {
+    bottom: 12px;
+    left: 12px;
+  }
+}
+.quissly-overlay__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.quissly-overlay__actions:not(:empty) {
+  margin-left: 4px;
+  padding-left: 12px;
+  border-left: 1px solid #e8e8ee;
+}
+/* The voice/image widgets mount their own buttons here; restyle them to belong
+   to the bar instead of the header they were designed for. Hard-reset with
+   !important, same reasoning as .quissly-overlay__input: themes style bare
+   <button> elements heavily (border, background, padding, box-shadow), and
+   this is server-rendered CSS, not a stylesheet a theme can simply lose a
+   specificity fight against. */
+.quissly-overlay__actions .quissly-voice-button,
+.quissly-overlay__actions .quissly-image-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #7a7a86 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  font-size: 0 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.quissly-overlay__actions .quissly-voice-button svg,
+.quissly-overlay__actions .quissly-image-button svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+}
+.quissly-overlay__actions .quissly-voice-button:hover,
+.quissly-overlay__actions .quissly-image-button:hover {
+  background: #f1f1f6 !important;
+  color: #4b4b57 !important;
+}
+.quissly-overlay__actions .quissly-voice-button.recording {
+  background: #fdecec !important;
+  color: #d64545 !important;
+  animation: quissly-overlay-pulse 1.2s ease-in-out infinite;
+}
+@keyframes quissly-overlay-pulse {
+  50% {
+    background: #f9d5d5;
+  }
+}
+/* Status text sits under the bar so it never resizes the capsule. */
+.quissly-overlay__actions .quissly-voice-notice,
+.quissly-overlay__actions .quissly-image-notice {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 12px;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+/* Phones: a slimmer bar, the same height as the close button beside it (after the
+   input reset above, which it has to override). */
+@media (max-width: 600px) {
+  .quissly-overlay {
+    padding: 12px;
+  }
+  .quissly-overlay__bar {
+    gap: 8px;
+  }
+  .quissly-overlay .quissly-overlay__field {
+    padding: 0 8px 0 18px;
+    gap: 10px;
+  }
+  .quissly-overlay .quissly-overlay__input,
+  .quissly-overlay .quissly-overlay__input:focus,
+  .quissly-overlay .quissly-overlay__input:hover {
+    padding: 15px 0 !important;
+    font-size: 17px !important;
+  }
+}
+.quissly-overlay .quissly-overlay__input::-webkit-search-cancel-button,
+.quissly-overlay .quissly-overlay__input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  display: none;
+}
+/* Voice/image buttons beside the theme's own search box (no overlay on the page). */
+.quissly-has-controls {
+  position: relative;
+}
+.quissly-controls {
+  position: absolute;
+  top: 50%;
+  right: 40px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  z-index: 2;
+}
+.quissly-controls .quissly-control {
+  -webkit-appearance: none;
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: none;
+  color: #6b6b76;
+  cursor: pointer;
+  line-height: 1;
+}
+.quissly-controls .quissly-control svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.quissly-controls .quissly-control:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #33333b;
+}
+.quissly-controls .quissly-control--voice.recording {
+  background: #fdecec;
+  color: #d64545;
+  animation: quissly-overlay-pulse 1.2s ease-in-out infinite;
+}
+.quissly-controls .quissly-voice-notice,
+.quissly-controls .quissly-image-notice {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #4b4b57;
+}
+.quissly-controls .quissly-voice-notice:empty,
+.quissly-controls .quissly-image-notice:empty {
+  display: none;
+}
+/* Most loved: the merchant's picks under the buttons (the Shopify app's cards), in 1, 2 or 4
+   columns - never 3, which leaves 8 cards as 3 + 3 + 2. Media queries, not container queries:
+   the overlay spans the page, and CS-Cart's LESS compiler predates @container. */
+/* "Your recent searches" beside "<Store> suggestions" (overlay.js renderRecent): two columns
+when both show, one under the other on a phone; a recent search is a chip with its own bin. */
+.quissly-overlay__lists {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px;
+}
+.quissly-overlay__lists[hidden], .quissly-overlay__group[hidden] { display: none; }
+@media (min-width: 700px) {
+  .quissly-overlay__lists.is-split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
+}
+.quissly-overlay__lists:not([hidden]) + .quissly-overlay__loved { margin-top: 22px; }
+.quissly-overlay .quissly-overlay__chip--recent { gap: 0; padding: 0; max-width: 100%; }
+.quissly-overlay .quissly-overlay__recent-use,
+.quissly-overlay .quissly-overlay__recent-use:hover,
+.quissly-overlay .quissly-overlay__recent-remove,
+.quissly-overlay .quissly-overlay__recent-remove:hover {
+  display: inline-flex !important; align-items: center; gap: 10px;
+  width: auto; min-width: 0; height: auto; min-height: 0; margin: 0;
+  background: transparent !important; border: 0 !important; border-radius: 999px;
+  box-shadow: none !important; color: inherit !important; cursor: pointer;
+  font: inherit; line-height: 1.2; text-transform: none; letter-spacing: normal;
+}
+.quissly-overlay .quissly-overlay__recent-use { padding: 9px 6px 9px 16px; }
+.quissly-overlay .quissly-overlay__recent-use span {
+  overflow: hidden; max-width: 220px; white-space: nowrap; text-overflow: ellipsis;
+}
+.quissly-overlay .quissly-overlay__recent-remove,
+.quissly-overlay .quissly-overlay__recent-remove:hover { padding: 9px 14px 9px 6px; color: #6b6b70 !important; }
+.quissly-overlay .quissly-overlay__recent-remove:hover { color: #d92d20 !important; }
+.quissly-overlay .quissly-overlay__recent-use:focus-visible,
+.quissly-overlay .quissly-overlay__recent-remove:focus-visible { outline: 2px solid #111; outline-offset: -2px; }
+@media (max-width: 600px) {
+  .quissly-overlay .quissly-overlay__recent-use { padding: 8px 4px 8px 14px; }
+  .quissly-overlay .quissly-overlay__recent-remove,
+  .quissly-overlay .quissly-overlay__recent-remove:hover { padding: 8px 12px 8px 4px; }
+}
+.quissly-overlay .quissly-overlay__loved-title {
+  margin: 0 0 18px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid #ececf1;
+  text-align: center;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1d1d22;
+}
+.quissly-overlay__loved-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 600px) {
+  .quissly-overlay__loved-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1150px) {
+  .quissly-overlay__loved-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.quissly-overlay a.quissly-overlay__loved-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  text-decoration: none !important;
+  color: #1d1d22 !important;
+  transition: box-shadow 0.15s;
+}
+.quissly-overlay a.quissly-overlay__loved-card:hover,
+.quissly-overlay a.quissly-overlay__loved-card:focus-visible {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.16);
+  outline: none;
+}
+.quissly-overlay__loved-media {
+  flex: 0 0 80px;
+  width: 80px;
+  height: 80px;
+}
+.quissly-overlay__loved-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.quissly-overlay__loved-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.quissly-overlay__loved-name {
+  font-size: 15px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.quissly-overlay__loved-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.quissly-overlay__loved-price {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.quissly-overlay__loved-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #444;
+  white-space: nowrap;
+}
+/* Five grey stars with the filled share of five dark ones laid over them. */
+.quissly-overlay__loved-stars {
+  position: relative;
+  display: inline-block;
+  letter-spacing: 1px;
+  color: #d4d4d8;
+}
+.quissly-overlay__loved-stars span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #1d1d22;
+}
+.quissly-overlay__loved-variants {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border: 1px solid #d4d4da;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+/* The Quissly Shopify app's search overlay look (2026-10-13), shared by every plugin: one
+   white panel near the top - the bar flush at its top, the suggestions under a hairline -
+   over a dimmed, slightly blurred page; no close button (Escape or the backdrop closes), a
+   round x that only clears the text, and quiet line icons for voice and image behind a
+   hairline. Comes last so it wins over the earlier rules. */
+.quissly-overlay {
+    padding: 8vh 16px 16px;
+    overflow: hidden;
+    background: rgba(17, 17, 20, .5);
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+    color: #111;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.quissly-overlay *, .quissly-overlay *::before, .quissly-overlay *::after {
+    box-sizing: border-box;
+}
+.quissly-overlay__panel {
+    width: 100%; max-width: 760px; max-height: 100%;
+    display: flex; flex-direction: column; gap: 0;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
+    color: #111;
+    transform: translateY(12px); opacity: 0;
+    transition: transform .15s ease, opacity .15s ease;
+}
+.quissly-overlay.is-open .quissly-overlay__panel { transform: none; opacity: 1; }
+.quissly-overlay__bar {
+    display: flex; align-items: center; flex-shrink: 0; gap: 0;
+    min-height: 60px; padding: 0 10px 0 0;
+    background: #fff;
+}
+.quissly-overlay .quissly-overlay__field,
+.quissly-overlay .quissly-overlay__field:focus-within {
+    display: flex; align-items: center; flex: 1 1 auto; gap: 0; min-width: 0;
+    padding: 0 6px 0 20px;
+    background: transparent; border: 0; border-radius: 0; box-shadow: none; transform: none;
+}
+.quissly-overlay .quissly-overlay__icon,
+.quissly-overlay .quissly-overlay__field:focus-within .quissly-overlay__icon {
+    flex: 0 0 20px; width: 20px; height: 20px;
+    fill: none; stroke: #6b6b6b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.quissly-overlay .quissly-overlay__input,
+.quissly-overlay .quissly-overlay__input:focus,
+.quissly-overlay .quissly-overlay__input:hover {
+    padding: 18px 12px !important;
+    font-family: inherit !important; font-size: 17px !important; line-height: 1.35 !important;
+    color: #111 !important;
+}
+.quissly-overlay .quissly-overlay__input::placeholder {
+    color: #8a8a8a !important;
+    opacity: 1 !important;
+}
+/* The x: clears the text, never closes the overlay; hidden while the bar is empty. */
+.quissly-overlay .quissly-overlay__clear {
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 40px; min-width: 40px; height: 44px; min-height: 0; padding: 0; margin: 0;
+    border: 0 !important; border-radius: 50%; background: transparent !important;
+    box-shadow: none !important; color: #6b6b70 !important; cursor: pointer;
+}
+.quissly-overlay .quissly-overlay__clear[hidden] { display: none !important; }
+.quissly-overlay .quissly-overlay__clear:focus-visible { outline: none; }
+.quissly-overlay .quissly-overlay__clear:focus-visible svg { box-shadow: 0 0 0 2px #111; }
+.quissly-overlay .quissly-overlay__clear svg {
+    display: block; width: 36px; height: 36px; padding: 9px; border-radius: 50%;
+    background: transparent;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    transition: background .15s;
+}
+.quissly-overlay .quissly-overlay__clear:hover { color: #111 !important; }
+@media (hover: hover) {
+    .quissly-overlay .quissly-overlay__clear:hover svg { background: #f0f0f2; }
+}
+/* Voice and image: line icons behind a hairline, a red disc while recording. */
+.quissly-overlay .quissly-overlay__actions,
+.quissly-overlay .quissly-overlay__actions:not(:empty) {
+    display: flex !important; align-items: center !important; flex-shrink: 0 !important;
+    gap: 0 !important; margin: 0 !important; padding: 0 !important; border: 0 !important;
+}
+.quissly-overlay .quissly-overlay__actions:not(:empty)::before {
+    content: ""; display: block; width: 1px; height: 24px; margin: 0 6px 0 2px; background: #e3e3e6;
+}
+.quissly-overlay .quissly-overlay__actions .quissly-voice-button,
+.quissly-overlay .quissly-overlay__actions .quissly-image-button,
+.quissly-overlay .quissly-overlay__actions .quissly-voice-button:hover,
+.quissly-overlay .quissly-overlay__actions .quissly-image-button:hover {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 0 !important;
+    padding: 0 !important; margin: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important; color: #2a2a2d !important; cursor: pointer;
+}
+.quissly-overlay .quissly-overlay__actions .quissly-voice-button.recording {
+    background: transparent !important; color: #2a2a2d !important; box-shadow: none !important;
+}
+.quissly-overlay .quissly-overlay__actions .quissly-voice-button svg,
+.quissly-overlay .quissly-overlay__actions .quissly-image-button svg {
+    display: block !important; width: 40px !important; height: 40px !important;
+    padding: 8px !important; border-radius: 50% !important;
+    background: transparent !important; color: #2a2a2d !important;
+    fill: none !important; stroke: currentColor !important; stroke-width: 1.7 !important;
+    transition: background .15s, color .15s;
+}
+@media (hover: hover) {
+    .quissly-overlay .quissly-overlay__actions .quissly-voice-button:not(:disabled):hover svg,
+    .quissly-overlay .quissly-overlay__actions .quissly-image-button:not(:disabled):hover svg {
+        background: #f0f0f2 !important;
+    }
+}
+.quissly-overlay .quissly-overlay__actions .quissly-voice-button:disabled,
+.quissly-overlay .quissly-overlay__actions .quissly-image-button:disabled {
+    opacity: .4;
+    cursor: wait;
+}
+.quissly-overlay .quissly-overlay__actions .quissly-voice-button.recording svg {
+    background: #d92d20 !important;
+    color: #fff !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+    .quissly-overlay .quissly-overlay__actions .quissly-voice-button.recording svg {
+        animation: quissly-rec-halo 1.4s ease-out infinite;
+    }
+}
+@keyframes quissly-rec-halo {
+    from { box-shadow: 0 0 0 0 rgba(217, 45, 32, .45);
+    } to { box-shadow: 0 0 0 8px rgba(217, 45, 32, 0);
+    };
+}
+/* Under the bar, inside the panel: the suggestions and the results scroll, the bar stays. */
+.quissly-overlay .quissly-overlay__suggest {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto;
+    padding: 12px 20px 16px;
+    background: transparent; border-radius: 0; box-shadow: none;
+    border-top: 1px solid #ececef;
+    scrollbar-width: thin; scrollbar-color: #d0d0d5 transparent;
+}
+.quissly-overlay .quissly-overlay__results {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto;
+    border-top: 1px solid #ececef;
+}
+.quissly-overlay .quissly-overlay__results:empty { display: none; }
+@media (max-width: 480px) {
+    .quissly-overlay { padding: 12px; }
+    .quissly-overlay__bar { padding-right: 4px; }
+    .quissly-overlay .quissly-overlay__input,
+    .quissly-overlay .quissly-overlay__input:focus,
+    .quissly-overlay .quissly-overlay__input:hover { padding: 16px 8px !important; }
+    .quissly-overlay .quissly-overlay__field:has(.quissly-overlay__actions:not(:empty)) {
+        padding: 0 2px 0 10px;
+    }
+    .quissly-overlay .quissly-overlay__field:has(.quissly-overlay__actions:not(:empty)) .quissly-overlay__icon {
+        display: none;
+    }
+    .quissly-overlay .quissly-overlay__suggest { padding: 12px 12px 14px; }
+}

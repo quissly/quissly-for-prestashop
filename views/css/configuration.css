@@ -1,0 +1,51 @@
+/*
+ * Quissly > Configuration: each section a PrestaShop panel whose heading folds it, as the
+ * WooCommerce and Magento plugins' sections (views/js/configuration.js remembers them).
+ */
+.q-config .q-section.panel { padding: 0 !important; margin-bottom: 16px; }
+.q-config .q-section > summary.panel-heading { height: auto; line-height: 1.4; margin: 0 !important; }
+.q-config .q-section > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 14px 20px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 15px;
+    text-transform: none;
+    user-select: none;
+}
+.q-config .q-section > summary::-webkit-details-marker { display: none; }
+.q-config .q-section:not([open]) > summary { border-bottom: 0 !important; }
+.q-config .q-section > summary:hover { color: #25b9d7; }
+.q-config .q-section__chevron {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    position: relative;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+}
+.q-config .q-section__chevron::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+}
+.q-config .q-section[open] .q-section__chevron::after { top: 10px; transform: rotate(-135deg); }
+.q-config .q-section__body { padding: 20px 20px 8px; }
+.q-config .q-section__body .form-group { margin-bottom: 22px; }
+.q-config .help-block { max-width: 680px; line-height: 1.55; }
+.q-config .q-config__codes { max-width: 520px; }
+.q-config__footer { overflow: hidden; margin: 0 0 20px; padding: 12px 20px; }
+/* The picker lists the picks itself: the plain list (for a page without JS) gives way to it. */
+.q-config .q-picker + .q-config__codes, .q-config .q-most-loved__list { display: none; }
+/* A switch the store's plan leaves out (PlanGate): off, greyed, not clickable; the line under it says why. */
+.q-config .q-config__locked { opacity: .45; pointer-events: none; }
+.q-config .q-config__plan { margin-top: 6px; color: #6c757d; }

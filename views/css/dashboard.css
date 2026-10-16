@@ -1,0 +1,15 @@
+/*
+ * Quissly > Dashboard on PrestaShop's admin theme: the shared DashboardView writes plain
+ * .label / .btn (CS-Cart's Bootstrap 2 defaults); PrestaShop's Bootstrap 3 needs the colours.
+ */
+.q-dash .label:not([class*="label-"]) { background: #bbcdd2; color: #363a41; }
+.q-dash .btn:not(.btn-primary):not(.btn-default) {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid #bbcdd2;
+    border-radius: 4px;
+    background: #fff;
+    color: #363a41;
+    text-decoration: none;
+}
+.q-dash .btn:not(.btn-primary):not(.btn-default):hover { background: #f4f9fb; border-color: #25b9d7; }
