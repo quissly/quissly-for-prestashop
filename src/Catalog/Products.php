@@ -29,6 +29,27 @@ final class Products
         ));
     }
 
+    /**
+     * The combinations of the active products, as the catalog sync names them (the variant ids
+     * "<id_product>-<id_product_attribute>", Events\EventBody::variantId).
+     *
+     * @return list<string>
+     */
+    public static function activeCombinationIds(): array
+    {
+        $ids = [];
+        foreach (Db::all(
+            "SELECT pas.id_product, pas.id_product_attribute FROM ?:product_attribute_shop pas"
+            . " JOIN ?:product_shop ps ON ps.id_product = pas.id_product AND ps.id_shop = pas.id_shop"
+            . " WHERE pas.id_shop = ?i AND ps.active = 1 AND ps.visibility != 'none' ORDER BY pas.id_product, pas.id_product_attribute",
+            self::shopId()
+        ) as $row) {
+            $ids[] = (int) $row['id_product'] . '-' . (int) $row['id_product_attribute'];
+        }
+
+        return $ids;
+    }
+
     private static function shopId(): int
     {
         return (int) \Context::getContext()->shop->id;

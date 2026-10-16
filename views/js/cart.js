@@ -11,7 +11,8 @@
  * Changes are applied as differences from the last event, one at a time and in order. The widget
  * names products by Quissly's id (a UUID), translated through the endpoint's op=resolve; an id
  * that cannot be translated is left alone (never guessed). A plain number is a PrestaShop
- * id_product. Config: the [data-quissly-cart] element's data-quissly-config JSON (src/Storefront.php).
+ * id_product; "1-2" (what op=resolve answers for a product with combinations) is product 1's
+ * combination 2, the one the shopper picked in the chat. Config: the [data-quissly-cart] element's data-quissly-config JSON (src/Storefront.php).
  */
 ( function () {
 	'use strict';

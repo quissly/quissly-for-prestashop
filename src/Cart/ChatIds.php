@@ -29,13 +29,16 @@ final class ChatIds
     }
 
     /**
-     * The given Quissly ids that belong to one of $productIds, translated.
+     * The given Quissly ids that belong to one of $productIds - or, for a product with
+     * combinations, to one of them: the chat names the combination a shopper picked by its
+     * variant id ("1-2" = product 1, combination 2), the way the catalog sync sent it.
      *
-     * @param list<string> $quisslyIds lower-case UUIDs
+     * @param list<string> $quisslyIds     lower-case UUIDs
      * @param list<int>    $productIds
-     * @return array<string, int>
+     * @param list<string> $combinationIds "<id_product>-<id_product_attribute>"
+     * @return array<string, int|string> uuid => id_product, or "<id_product>-<id_product_attribute>"
      */
-    public static function resolve(string $namespace, array $quisslyIds, array $productIds): array
+    public static function resolve(string $namespace, array $quisslyIds, array $productIds, array $combinationIds = []): array
     {
         $wanted = array_flip($quisslyIds);
         $out = [];
@@ -45,8 +48,28 @@ final class ChatIds
                 $out[$uuid] = (int) $id;
             }
         }
+        foreach ($combinationIds as $id) {
+            $uuid = self::uuid5($namespace, (string) $id);
+            if (isset($wanted[$uuid]) && !isset($out[$uuid])) {
+                $out[$uuid] = (string) $id;
+            }
+        }
 
         return $out;
+    }
+
+    /**
+     * A cart request's product: "7" (its default combination) or "1-2" (that combination).
+     *
+     * @return array{0: int, 1: int}|null [id_product, id_product_attribute - 0 = the default]
+     */
+    public static function cartTarget(string $value): ?array
+    {
+        if (!preg_match('/^([1-9]\d{0,9})(?:-([1-9]\d{0,9}))?$/', trim($value), $m)) {
+            return null;
+        }
+
+        return [(int) $m[1], isset($m[2]) ? (int) $m[2] : 0];
     }
 
     private function __construct()

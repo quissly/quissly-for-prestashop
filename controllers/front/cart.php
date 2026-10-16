@@ -1,10 +1,13 @@
 <?php
 /**
  * The chat's cart, for QChat's "Add to Cart" (views/js/cart.js):
- *   op=resolve (GET ids=uuid,uuid) - Quissly's product ids as the shop's ({uuid: id_product}):
- *     uuid5 over the shop's products in the account's namespace, then the pairs the sync recorded;
+ *   op=resolve (GET ids=uuid,uuid) - Quissly's product ids as the shop's ({uuid: id_product}, or
+ *     "<id_product>-<id_product_attribute>" for the combination of a product the chat named): uuid5
+ *     over the shop's products and their combinations in the account's namespace, then the pairs the
+ *     sync recorded;
  *   op=update (POST product_id, delta, security_hash) - the shopper's cart gains or loses `delta`
- *     of the product (its default combination), through PrestaShop's own cart; {ok, quantity}.
+ *     of the product: product_id "7" = its default combination, "1-2" = that combination (only
+ *     one of that product's own) - through PrestaShop's own cart; {ok, quantity}.
  */
 class QuisslyCartModuleFrontController extends ModuleFrontController
 {
@@ -22,10 +25,10 @@ class QuisslyCartModuleFrontController extends ModuleFrontController
             http_response_code(403);
             $this->ajaxDie(json_encode(['ok' => false]));
         }
-        $this->ajaxDie(json_encode($this->update((int) Tools::getValue('product_id'), (int) Tools::getValue('delta'))));
+        $this->ajaxDie(json_encode($this->update((string) Tools::getValue('product_id'), (int) Tools::getValue('delta'))));
     }
 
-    /** @return array<string, int> */
+    /** @return array<string, int|string> */
     private function resolve(string $raw): array
     {
         $ids = array_slice(array_values(array_unique(array_filter(
@@ -41,15 +44,20 @@ class QuisslyCartModuleFrontController extends ModuleFrontController
         }
         $store = new \Quissly\PrestaShop\Sync\DbSyncStore();
         $namespace = \Quissly\PrestaShop\Panel\QChatDirectory::cachedNamespace($store);
-        $found = $namespace !== '' ? \Quissly\PrestaShop\Cart\ChatIds::resolve($namespace, $ids, \Quissly\PrestaShop\Catalog\Products::activeIds()) : [];
+        $found = $namespace !== '' ? \Quissly\PrestaShop\Cart\ChatIds::resolve($namespace, $ids, \Quissly\PrestaShop\Catalog\Products::activeIds(), \Quissly\PrestaShop\Catalog\Products::activeCombinationIds()) : [];
 
         return $found + $store->productIdsFor(array_values(array_diff($ids, array_keys($found))));
     }
 
-    private function update(int $productId, int $delta): array
+    private function update(string $target, int $delta): array
     {
-        if ($productId <= 0 || $delta === 0) {
+        $parsed = \Quissly\PrestaShop\Cart\ChatIds::cartTarget($target);
+        if ($parsed === null || $delta === 0) {
             return ['ok' => false];
+        }
+        list($productId, $attribute) = $parsed;
+        if ($attribute > 0 && !Db::getInstance()->getValue('SELECT 1 FROM ' . _DB_PREFIX_ . 'product_attribute WHERE id_product = ' . (int) $productId . ' AND id_product_attribute = ' . (int) $attribute)) {
+            return ['ok' => false]; // not one of this product's combinations
         }
         $context = $this->context;
         if (!Validate::isLoadedObject($context->cart)) {
@@ -65,7 +73,9 @@ class QuisslyCartModuleFrontController extends ModuleFrontController
             $context->cookie->id_cart = (int) $cart->id;
             $context->cookie->write();
         }
-        $attribute = (int) Product::getDefaultAttribute($productId);
+        if ($attribute === 0) {
+            $attribute = (int) Product::getDefaultAttribute($productId);
+        }
         $result = $context->cart->updateQty(abs($delta), $productId, $attribute, false, $delta > 0 ? 'up' : 'down');
         $quantity = (int) ($context->cart->getProductQuantity($productId, $attribute)['quantity'] ?? 0);
 
