@@ -12,10 +12,10 @@ namespace Quissly\PrestaShop;
  *   user_id  customer:<id>  a signed-in customer - stable across devices and sessions;
  *            guest:<uuid>   an anonymous browser - a UUID kept in a first-party cookie for a
  *                           year. One device, not one person.
- *            null           a guest without consent to performance cookies on a store running
- *                           CS-Cart's GDPR add-on (its Klaro banner lists this add-on as a
- *                           service): no cookie is read or set - as the Shopify app withholds its
- *                           visitor id when analytics consent is refused.
+ *            null           a guest without consent, when the merchant set a consent rule
+ *                           (consentAllows - the cookie their consent module sets on accept): no
+ *                           cookie is read or set - as the Shopify app withholds its visitor id
+ *                           when analytics consent is refused.
  *   device / os             from the browser's User-Agent (text search only, as Shopify).
  *
  * No session-length id: the session hash used before 2026-09-30 changed with every session,
@@ -72,6 +72,36 @@ final class Shopper
         }
 
         return $policy !== 'explicit';
+    }
+
+    /**
+     * May a guest be identified, by the merchant's consent rule (setting guest_consent_cookie)?
+     * PrestaShop has no cookie banner or consent API of its own, so the rule names the cookie the
+     * shop's consent module sets once a visitor accepts: '' = no rule (identified, as before);
+     * `name` = that cookie is there and not empty; `name=value` = it holds that value (its text
+     * contains it - banners often keep JSON). Without consent no cookie is read or set.
+     *
+     * @param array<string, mixed> $cookies the request's cookies
+     */
+    public static function consentAllows(string $rule, array $cookies): bool
+    {
+        $rule = trim($rule);
+        if ($rule === '') {
+            return true;
+        }
+        $parts = explode('=', $rule, 2);
+        $value = $cookies[trim($parts[0])] ?? null;
+        if (!is_string($value) || $value === '') {
+            return false;
+        }
+
+        return !isset($parts[1]) || trim($parts[1]) === '' || strpos($value, trim($parts[1])) !== false;
+    }
+
+    /** Whether a consent rule can be saved: a cookie name, optionally `=value`. */
+    public static function validConsentRule(string $rule): bool
+    {
+        return $rule === '' || (bool) preg_match('/^[A-Za-z0-9_.\-]{1,100}(=[^;\s]{1,100})?$/', $rule);
     }
 
     /** A fresh UUID v4. */

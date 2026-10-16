@@ -91,6 +91,7 @@ Dashboard - so a shop nobody visits for a while waits that long.
 | **QChat assistant** | off | Quissly's chat on every page; its **Add to cart** puts products in your real PrestaShop cart. |
 | **Quick Recommendations** | off | Products as the shopper types - under the search overlay's bar, or under your theme's search box - with their image, name and price from your store. Quick must also be switched on for your Quissly account. |
 | **Shopping activity for Quissly analytics** | on | Sends product views, searches, adds to cart and wishlist, and paid orders to Quissly's analytics (see *Privacy*). |
+| **Cookie that records consent** | empty | Only if your shop asks visitors for cookie consent: the cookie your consent module sets when a visitor accepts, as `name` or `name=value` (e.g. `cookieconsent_status=allow`). Guests are then counted, and given Quissly's cookie, only after accepting. |
 | **Search Examples** | generated | The example searches typed into the empty search bar, one list per shop language, up to 20. Quissly writes them from your catalog after the first sync; edit, remove or reset them here. |
 | **Search Suggestions** | on, Automatic | Buttons under the empty search bar. *Automatic* shows what Quissly generated; *Manual* shows your own, up to 10 per language. |
 | **Show recent searches** | on | The shopper's last 5 searches beside the suggestions, each with a bin to remove it. Kept only in the shopper's own browser, never sent anywhere. |
@@ -130,7 +131,9 @@ For this the `modules/quissly` folder must be writable by the web server, and th
 ## Privacy
 
 - To count a returning visitor once, a guest gets one first-party cookie on their first search,
-  `quissly_uid` (a random id, one year).
+  `quissly_uid` (a random id, one year). If your shop asks for cookie consent, set **Cookie that
+  records consent**: until a guest accepts, no cookie is set and their searches and visits are not
+  counted.
 - Each search tells Quissly `customer:<id>` for a signed-in customer or `guest:<random id>`, plus
   the device type and operating system. Shopping activity sends product ids, quantities, prices
   and order totals. **No name, email, address or IP address is ever sent.**

@@ -30,7 +30,7 @@ use Quissly\PrestaShop\Sync\DbSyncStore;
 final class ConfigurationPage
 {
     /** The Features section's settings, in the other plugins' order. */
-    private const FEATURES = ['search_interception', 'enable_overlay', 'overlay_layout', 'overlay_mount_selector', 'enable_quick', 'quick_style', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events'];
+    private const FEATURES = ['search_interception', 'enable_overlay', 'overlay_layout', 'overlay_mount_selector', 'enable_quick', 'quick_style', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'guest_consent_cookie'];
 
     /** The settings drawn as switches; the rest of Settings::DEFAULTS are text, lists or selects. */
     private const SWITCHES = ['search_interception', 'enable_overlay', 'enable_quick', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'overlay_suggestions', 'overlay_recent', 'most_loved'];
@@ -101,6 +101,9 @@ final class ConfigurationPage
                     $value = 'rows';
                 } elseif ($id === 'update_check_every' && !in_array($value, ['5m', '30m', '1h', '6h', '12h', '1d', 'never'], true)) {
                     $value = '30m';
+                } elseif ($id === 'guest_consent_cookie' && !\Quissly\PrestaShop\Shopper::validConsentRule($value)) {
+                    $errors[] = Text::t('quissly_search.consent_rule_invalid');
+                    continue;
                 }
                 Settings::set($id, $value);
             }

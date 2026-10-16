@@ -236,7 +236,7 @@ final class SearchProvider implements ProductSearchProviderInterface
         if (is_object($customer) && (int) $customer->id > 0 && $customer->isLogged()) {
             return Shopper::customerId((int) $customer->id);
         }
-        if (!Shopper::guestAllowed(null, '')) {
+        if (!Shopper::consentAllows((string) \Quissly\PrestaShop\Platform\Settings::get('guest_consent_cookie'), $_COOKIE)) {
             return null;
         }
         $guest = Shopper::guestId((string) ($_COOKIE[Shopper::COOKIE] ?? ''));
