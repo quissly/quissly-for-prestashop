@@ -88,7 +88,7 @@ the back office, or at once when you press a sync button on the Dashboard.
 | **Voice search** | off | A microphone button (up to 5 seconds of speech). Needs your shop on HTTPS. |
 | **Image search** | off | A camera button; shoppers can also paste a photo. |
 | **QChat assistant** | off | Quissly's chat on every page; its **Add to cart** puts products in your real PrestaShop cart. |
-| **Quick Recommendations** | off | Not available in the PrestaShop module yet - changes nothing. |
+| **Quick Recommendations** | off | Products as the shopper types - under the search overlay's bar, or under your theme's search box - with their image, name and price from your store. Quick must also be switched on for your Quissly account. |
 | **Shopping activity for Quissly analytics** | on | Sends product views, searches, adds to cart and wishlist, and paid orders to Quissly's analytics (see *Privacy*). |
 | **Search Examples** | generated | The example searches typed into the empty search bar, one list per shop language, up to 20. Quissly writes them from your catalog after the first sync; edit, remove or reset them here. |
 | **Search Suggestions** | on, Automatic | Buttons under the empty search bar. *Automatic* shows what Quissly generated; *Manual* shows your own, up to 10 per language. |

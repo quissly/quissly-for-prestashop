@@ -28,7 +28,7 @@ final class Page
     /** @var array|null */
     private static $built;
 
-    /** @return array{overlay: bool, overlay_json: string, media: bool, media_json: string, qchat_agent_id: string, qchat_script: string, cart_json: string, events: bool, events_json: string} */
+    /** @return array{overlay: bool, overlay_json: string, media: bool, media_json: string, quick: bool, quick_json: string, qchat_agent_id: string, qchat_script: string, cart_json: string, events: bool, events_json: string} */
     public static function data(): array
     {
         if (self::$built !== null) {
@@ -57,6 +57,7 @@ final class Page
                 'cart_adjust'  => $link->getModuleLink('quissly', 'cart', ['op' => 'update']),
                 'cart_resolve' => $link->getModuleLink('quissly', 'cart', ['op' => 'resolve']),
                 'event'        => $link->getModuleLink('quissly', 'event'),
+                'quick'        => $link->getModuleLink('quissly', 'quick'),
             ],
             'security_hash'  => (string) \Tools::getToken(false),
             'event'          => $configured ? \Quissly\PrestaShop\Events\Recorder::pageEvent() : null,
@@ -67,9 +68,11 @@ final class Page
             'chips'          => SearchSuggestions::buttonsForStorefront($store, $serviceId, Shop::httpGet(5), time(), $language, $main),
             'most_loved'     => $configured ? MostLovedCards::forShopper($store) : [],
             'overlay_layout' => Features::overlayLayout(),
+            'quick_style'    => Features::quickStyle(),
             'i18n'           => [
                 'search'             => $context->getTranslator()->trans('Search', [], 'Shop.Theme.Catalog'),
                 'clear'              => Text::t('quissly_search.sf_clear'),
+                'seeAll'             => Text::t('quissly_search.sf_see_all'),
                 'placeholder'        => Text::t('quissly_search.sf_placeholder'),
                 'suggestions'        => $shopName !== '' ? Text::t('quissly_search.sf_suggestions', ['[store]' => $shopName]) : Text::t('quissly_search.sf_suggestions_plain'),
                 'mostLoved'          => $shopName !== '' ? Text::t('quissly_search.sf_most_loved', ['[store]' => $shopName]) : Text::t('quissly_search.sf_most_loved_plain'),
@@ -96,14 +99,14 @@ final class Page
     public static function assets(\FrontController $controller, string $moduleUri): void
     {
         $data = self::data();
-        if (!$data['overlay'] && !$data['media'] && !$data['events'] && $data['qchat_agent_id'] === '') {
+        if (!$data['overlay'] && !$data['media'] && !$data['quick'] && !$data['events'] && $data['qchat_agent_id'] === '') {
             return;
         }
         $base = 'modules/quissly/views/';
-        if ($data['overlay'] || $data['media']) {
+        if ($data['overlay'] || $data['media'] || $data['quick']) {
             $controller->registerStylesheet('quissly-storefront', $base . 'css/storefront.css', ['media' => 'all', 'priority' => 150]);
         }
-        $scripts = ['overlay' => $data['overlay'], 'media' => $data['media'], 'events' => $data['events'], 'cart' => $data['qchat_agent_id'] !== ''];
+        $scripts = ['overlay' => $data['overlay'], 'media' => $data['media'], 'quick' => $data['quick'], 'events' => $data['events'], 'cart' => $data['qchat_agent_id'] !== ''];
         foreach ($scripts as $name => $on) {
             if ($on) {
                 $controller->registerJavascript('quissly-' . $name, $base . 'js/' . $name . '.js', ['position' => 'bottom', 'priority' => 150]);
@@ -127,6 +130,9 @@ final class Page
         }
         if ($data['media']) {
             $html .= '<div data-quissly-media data-quissly-config="' . $e($data['media_json']) . '" hidden></div>';
+        }
+        if ($data['quick']) {
+            $html .= '<div data-quissly-quick data-quissly-config="' . $e($data['quick_json']) . '" hidden></div>';
         }
         if ($data['events']) {
             $html .= '<div data-quissly-events data-quissly-config="' . $e($data['events_json']) . '" hidden></div>';
