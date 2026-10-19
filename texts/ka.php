@@ -548,4 +548,13 @@ return [
     'quissly_search.test_connection_fail' => 'Quissly-სთან კავშირი ვერ მოხერხდა (HTTP [status]).',
     'quissly_search.test_connection_ok' => 'Quissly-სთან კავშირი წესრიგშია ([count] შედეგი სატესტო ძიებაზე).',
     'quissly_search.yes' => 'დიახ',
+    'quissly_search.su_block_code_missing' => 'გასაგრძელებლად შეიყვანეთ ელფოსტაზე მიღებული 6-ნიშნა კოდი.',
+    'quissly_search.su_block_code_not_sent' => 'გასაგრძელებლად დაადასტურეთ ელფოსტა კოდით.',
+    'quissly_search.su_code_invalid' => 'შეიყვანეთ ელფოსტაზე გამოგზავნილი 6-ნიშნა კოდი.',
+    'quissly_search.su_verify_intro' => '[email]-ზე გამოვგზავნით 6-ნიშნა კოდს, რომ დავადასტუროთ, რომ ეს მისამართი თქვენია.',
+    'quissly_search.su_verify_label' => 'დადასტურების კოდი',
+    'quissly_search.su_verify_resend' => 'ახალი კოდის გაგზავნა',
+    'quissly_search.su_verify_send' => 'კოდის გაგზავნა',
+    'quissly_search.su_verify_sending' => 'იგზავნება…',
+    'quissly_search.su_verify_sent' => '6-ნიშნა კოდი გაიგზავნა [email]-ზე. ის 10 წუთის განმავლობაში მოქმედებს.',
 ];

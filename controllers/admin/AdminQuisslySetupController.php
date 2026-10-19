@@ -1,7 +1,8 @@
 <?php
 /**
  * Quissly Setup (src/Admin/SetupFlow): the three-step onboarding page, and its four steps posted
- * back here as ?ajax=1&action=setupConnect|setupPlan|setupStatus|setupFinish (JSON).
+ * back here as ?ajax=1&action=setupConnect|setupPlan|setupStatus|setupFinish (JSON), and the email
+ * code step 1 asks Quissly for as ?ajax=1&action=setupSendCode.
  */
 class AdminQuisslySetupController extends ModuleAdminController
 {
@@ -32,7 +33,8 @@ class AdminQuisslySetupController extends ModuleAdminController
         parent::initContent();
         $self = self::$currentIndex . '&token=' . $this->token;
         $this->content .= \Quissly\PrestaShop\Admin\SetupFlow::page($self, [
-            'connect' => $self . '&ajax=1&action=setupConnect',
+            'connect'   => $self . '&ajax=1&action=setupConnect',
+            'send_code' => $self . '&ajax=1&action=setupSendCode',
             'plan'    => $self . '&ajax=1&action=setupPlan',
             'status'  => $self . '&ajax=1&action=setupStatus',
             'finish'  => $self . '&ajax=1&action=setupFinish',
@@ -43,6 +45,11 @@ class AdminQuisslySetupController extends ModuleAdminController
     public function ajaxProcessSetupConnect()
     {
         $this->answer(\Quissly\PrestaShop\Admin\SetupFlow::connect());
+    }
+
+    public function ajaxProcessSetupSendCode()
+    {
+        $this->answer(\Quissly\PrestaShop\Admin\SetupFlow::sendCode());
     }
 
     public function ajaxProcessSetupPlan()

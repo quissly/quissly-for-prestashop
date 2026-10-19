@@ -548,4 +548,13 @@ return [
     'quissly_search.test_connection_fail' => 'Quissly connection failed (HTTP [status]).',
     'quissly_search.test_connection_ok' => 'Quissly connection OK ([count] results for a test query).',
     'quissly_search.yes' => 'Yes',
+    'quissly_search.su_block_code_missing' => 'Enter the 6-digit code from your email to continue.',
+    'quissly_search.su_block_code_not_sent' => 'Confirm the email with a code to continue.',
+    'quissly_search.su_code_invalid' => 'Enter the 6-digit code we emailed you.',
+    'quissly_search.su_verify_intro' => 'We\'ll email a 6-digit code to [email] to confirm it\'s yours.',
+    'quissly_search.su_verify_label' => 'Verification code',
+    'quissly_search.su_verify_resend' => 'Send a new code',
+    'quissly_search.su_verify_send' => 'Send code',
+    'quissly_search.su_verify_sending' => 'Sending…',
+    'quissly_search.su_verify_sent' => 'We sent a 6-digit code to [email]. It expires in 10 minutes.',
 ];

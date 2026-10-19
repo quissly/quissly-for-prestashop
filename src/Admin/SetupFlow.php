@@ -94,7 +94,18 @@ final class SetupFlow
                         'nameMissing'  => $text('su_block_name_missing'),
                         'nameInvalid'  => $text('su_block_name_invalid'),
                         'sellMissing'  => $text('su_block_sell_missing'),
+                        'codeNotSent'  => $text('su_block_code_not_sent'),
+                        'codeMissing'  => $text('su_block_code_missing'),
                         'none'         => $text('su_nothing_charged'),
+                    ],
+                    // The emailed code under the email field ([email] is the address).
+                    'verify'        => [
+                        'intro'   => $text('su_verify_intro'),
+                        'sent'    => $text('su_verify_sent'),
+                        'label'   => $text('su_verify_label'),
+                        'send'    => $text('su_verify_send'),
+                        'resend'  => $text('su_verify_resend'),
+                        'sending' => $text('su_verify_sending'),
                     ],
                     'chipWorking'   => $text('su_setting_up'),
                     'chipReady'     => $text('su_ready'),
@@ -124,6 +135,23 @@ final class SetupFlow
         ]);
     }
 
+    /** Step 1, before Save: Quissly mails the sign-up code to the email the account will use. */
+    public static function sendCode(): array
+    {
+        $email = (string) \Tools::getValue('email');
+        $problem = SetupInput::emailProblem($email);
+        if ($problem !== '') {
+            return ['ok' => false, 'message' => Text::t('quissly_search.su_email_' . $problem)];
+        }
+        $result = (new Connector(Credentials::credentialStore(), self::consolePost(Connector::SEND_CODE_TIMEOUT_SECONDS)))->sendCode(
+            $email,
+            self::domain(),
+            Credentials::fromRegistry()->source() === Credentials::SOURCE_CONFIG
+        );
+
+        return ['ok' => $result['ok'], 'message' => $result['ok'] ? '' : self::message($result['message'])];
+    }
+
     /** Step 1: create the Quissly account (one-click Connect) for this store. */
     public static function connect(): array
     {
@@ -143,6 +171,11 @@ final class SetupFlow
         if (mb_strlen($description) > 500) {
             return ['ok' => false, 'message' => Text::t('quissly_search.su_description_long')];
         }
+        // The six digits Quissly mailed to the email (sendCode()); its sign-up refuses without them.
+        $code = trim((string) \Tools::getValue('verification_code'));
+        if (preg_match('/^\d{6}$/', $code) !== 1) {
+            return ['ok' => false, 'message' => Text::t('quissly_search.su_code_invalid')];
+        }
         @set_time_limit(Connector::TIMEOUT_SECONDS + 60);
         $onboarding = self::onboarding();
         $inSetup = !$onboarding->isComplete();
@@ -156,6 +189,7 @@ final class SetupFlow
             'environment'       => $environment !== '' ? $environment : Config::DEFAULT_ENVIRONMENT,
             'already_connected' => Credentials::fromRegistry()->source() === Credentials::SOURCE_CONFIG,
             'description'       => $description,
+            'verification_code' => $code,
         ]);
         if (!$result['ok']) {
             return ['ok' => false, 'message' => self::message($result['message'])];

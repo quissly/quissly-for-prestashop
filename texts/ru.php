@@ -548,4 +548,13 @@ return [
     'quissly_search.test_connection_fail' => 'Не удалось подключиться к Quissly (HTTP [status]).',
     'quissly_search.test_connection_ok' => 'Подключение к Quissly в порядке ([count] результатов по тестовому запросу).',
     'quissly_search.yes' => 'Да',
+    'quissly_search.su_block_code_missing' => 'Чтобы продолжить, введите 6-значный код из письма.',
+    'quissly_search.su_block_code_not_sent' => 'Чтобы продолжить, подтвердите адрес кодом.',
+    'quissly_search.su_code_invalid' => 'Введите 6-значный код из письма.',
+    'quissly_search.su_verify_intro' => 'Мы отправим 6-значный код на [email], чтобы подтвердить, что это ваш адрес.',
+    'quissly_search.su_verify_label' => 'Код подтверждения',
+    'quissly_search.su_verify_resend' => 'Отправить новый код',
+    'quissly_search.su_verify_send' => 'Отправить код',
+    'quissly_search.su_verify_sending' => 'Отправка…',
+    'quissly_search.su_verify_sent' => 'Мы отправили 6-значный код на [email]. Он действует 10 минут.',
 ];
