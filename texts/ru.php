@@ -557,4 +557,10 @@ return [
     'quissly_search.su_verify_send' => 'Отправить код',
     'quissly_search.su_verify_sending' => 'Отправка…',
     'quissly_search.su_verify_sent' => 'Мы отправили 6-значный код на [email]. Он действует 10 минут.',
+    'quissly_search.refused_401' => 'Quissly не принял ключ этого магазина (HTTP 401).',
+    'quissly_search.refused_402' => 'Quissly ждёт оплату тарифа этого магазина (HTTP 402) - см. «Оплата».',
+    'quissly_search.refused_403' => 'Quissly отклоняет поиски этого магазина (HTTP 403). Обычно у магазина ещё нет активного тарифа с поиском - см. «Оплата»; тариф с оплатой по счёту заработает, когда Quissly его активирует.',
+    'quissly_search.refused_said' => 'Ответ Quissly: «[detail]».',
+    'quissly_search.refused_check_config' => 'Ключ задан в config/defines_custom.inc.php: проверьте там QUISSLY_BEARER_TOKEN, закрытый ключ и окружение.',
+    'quissly_search.su_live_refused' => 'Настройка завершена, но Quissly отклонил первый поиск, поэтому магазин пока использует поиск PrestaShop. [reason]',
 ];

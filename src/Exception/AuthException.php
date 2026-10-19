@@ -13,6 +13,20 @@ namespace Quissly\PrestaShop\Exception;
  */
 final class AuthException extends QuisslyException
 {
+    /** @var string Quissly's reason for refusing, as it said it ('' when it gave none) */
+    private $detail;
+
+    public function __construct(string $message, int $httpStatus = 0, ?\Throwable $previous = null, string $detail = '')
+    {
+        parent::__construct($message, $httpStatus, $previous);
+        $this->detail = $detail;
+    }
+
+    public function detail(): string
+    {
+        return $this->detail;
+    }
+
     public function shouldFallbackToNative(): bool
     {
         return false;

@@ -557,4 +557,10 @@ return [
     'quissly_search.su_verify_send' => 'Send code',
     'quissly_search.su_verify_sending' => 'Sending…',
     'quissly_search.su_verify_sent' => 'We sent a 6-digit code to [email]. It expires in 10 minutes.',
+    'quissly_search.refused_401' => 'Quissly did not accept this store\'s key (HTTP 401).',
+    'quissly_search.refused_402' => 'Quissly is waiting for a payment for this store\'s plan (HTTP 402) - see Billing.',
+    'quissly_search.refused_403' => 'Quissly refuses this store\'s searches (HTTP 403). Usually the store has no active plan with search yet - see Billing; a plan chosen for manual invoice works once Quissly activates it.',
+    'quissly_search.refused_said' => 'Quissly said: “[detail]”.',
+    'quissly_search.refused_check_config' => 'The key comes from config/defines_custom.inc.php: check QUISSLY_BEARER_TOKEN, the private key and the environment there.',
+    'quissly_search.su_live_refused' => 'Setup is finished, but Quissly refused the first search, so the shop keeps PrestaShop\'s search for now. [reason]',
 ];

@@ -557,4 +557,10 @@ return [
     'quissly_search.su_verify_send' => 'კოდის გაგზავნა',
     'quissly_search.su_verify_sending' => 'იგზავნება…',
     'quissly_search.su_verify_sent' => '6-ნიშნა კოდი გაიგზავნა [email]-ზე. ის 10 წუთის განმავლობაში მოქმედებს.',
+    'quissly_search.refused_401' => 'Quissly-მ ამ მაღაზიის გასაღები არ მიიღო (HTTP 401).',
+    'quissly_search.refused_402' => 'Quissly ამ მაღაზიის ტარიფის გადახდას ელოდება (HTTP 402) - იხილეთ „გადახდა“.',
+    'quissly_search.refused_403' => 'Quissly უარს ამბობს ამ მაღაზიის ძიებებზე (HTTP 403). ჩვეულებრივ მაღაზიას ჯერ არ აქვს აქტიური ტარიფი ძიებით - იხილეთ „გადახდა“; ინვოისით არჩეული ტარიფი იმუშავებს, როცა Quissly მას გააქტიურებს.',
+    'quissly_search.refused_said' => 'Quissly-ს პასუხი: „[detail]“.',
+    'quissly_search.refused_check_config' => 'გასაღები config/defines_custom.inc.php-დან მოდის: შეამოწმეთ იქ QUISSLY_BEARER_TOKEN, პირადი გასაღები და გარემო.',
+    'quissly_search.su_live_refused' => 'დაყენება დასრულდა, მაგრამ Quissly-მ პირველ ძიებაზე უარი თქვა, ამიტომ მაღაზია ჯერ PrestaShop-ის ძიებას იყენებს. [reason]',
 ];

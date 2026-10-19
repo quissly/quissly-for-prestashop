@@ -41,7 +41,13 @@ final class AdminStatusView
             $items = [];
             foreach ((array) $report['reasons'] as $reason) {
                 $key = self::REASON_LABELS[$reason] ?? null;
-                $items[] = '<li>' . self::escape($key ? self::t($key) : (string) $reason) . '</li>';
+                $text = $key ? self::t($key) : (string) $reason;
+                if ($reason === 'auth_error' && !empty($report['auth_alert'])) {
+                    // Why Quissly refuses the store's searches, by status and in Quissly's words.
+                    $alert = $report['auth_alert'];
+                    $text = Refusal::forMerchant((int) $alert['status'], (string) ($alert['detail'] ?? ''), (string) ($report['source'] ?? ''));
+                }
+                $items[] = '<li>' . self::escape($text) . '</li>';
             }
             $rows[] = self::row(self::t('quissly_search.inactive_reason'), '<ul>' . implode('', $items) . '</ul>');
         }

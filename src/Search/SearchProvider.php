@@ -123,7 +123,8 @@ final class SearchProvider implements ProductSearchProviderInterface
             $result = $client->qsearch($text, self::userId(), $page, $perPage, $sort[0], $sort[1], Shopper::deviceAndOs((string) ($_SERVER['HTTP_USER_AGENT'] ?? '')));
         } catch (AuthException $e) {
             Logger::error('QSearch auth/plan failure surfaced to merchant', ['status' => $e->getHttpStatus()]);
-            HealthStore::recordFailure($e->getHttpStatus(), $e->getMessage());
+            // Quissly's own reason is what the status pages show (Refusal).
+            HealthStore::recordFailure($e->getHttpStatus(), $e->detail());
             SearchSignal::recordFallback(SearchSignal::codeFor($e));
 
             return $this->nativeResult($context, $query);

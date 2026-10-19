@@ -9,6 +9,7 @@ use Quissly\PrestaShop\Config;
 use Quissly\PrestaShop\Connect\Connector;
 use Quissly\PrestaShop\Credentials;
 use Quissly\PrestaShop\Panel\QChatDirectory;
+use Quissly\PrestaShop\Refusal;
 use Quissly\PrestaShop\Platform\Db;
 use Quissly\PrestaShop\Platform\Http;
 use Quissly\PrestaShop\Platform\Registry;
@@ -328,6 +329,18 @@ final class SetupFlow
             Settings::set('enable_qchat', 'Y');
         }
         $onboarding->complete();
+        // Search is switched on: one search says whether Quissly answers it, so the status pages
+        // do not show "Active" for a store whose searches Quissly refuses (no plan it knows of - a
+        // plan chosen for manual invoice; found testing the CS-Cart add-on, 2026-10-19).
+        $credentials = Credentials::fromRegistry();
+        $probe = $search ? DashboardPage::probe($credentials) : null;
+        if ($probe !== null && $probe['refused']) {
+            $store->log(sprintf('Quissly Setup finished, but Quissly refused the first search (HTTP %d%s).', $probe['status'], $probe['detail'] !== '' ? ': ' . $probe['detail'] : ''), time());
+
+            return ['ok' => true, 'notice' => Text::t('quissly_search.su_live_refused', [
+                '[reason]' => Refusal::forMerchant($probe['status'], $probe['detail'], $credentials->source()),
+            ])];
+        }
         $store->log('Quissly Setup finished; ' . ($services === [] ? 'qsearch' : implode(' and ', $services)) . ' is live.', time());
 
         return ['ok' => true, 'notice' => Text::t($search ? 'quissly_search.su_live_now' : 'quissly_search.su_live_chat_now')];

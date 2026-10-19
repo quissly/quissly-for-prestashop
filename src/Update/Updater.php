@@ -52,6 +52,9 @@ final class Updater
     /** Why the last GitHub request failed ('' = it did not). */
     private static $githubError = '';
 
+    /** Why the last GitHub release was not offered (Release::parseProblem), '' when it was. */
+    private static $releaseProblem = '';
+
     /** Check (and install) when the merchant's frequency is up. */
     public static function runIfDue(DbSyncStore $store, int $now): void
     {
@@ -95,6 +98,8 @@ final class Updater
         if ($release === null) {
             if (self::$githubError !== '') {
                 self::problem($store, sprintf('Quissly could not get the latest release from GitHub (%s).', self::$githubError), $now);
+            } elseif (self::$releaseProblem !== '') {
+                self::problem($store, sprintf('Quissly did not install the latest release on GitHub: %s.', self::$releaseProblem), $now);
             }
 
             return; // tried again soon
@@ -179,6 +184,7 @@ final class Updater
      */
     private static function latest(?string $hinted): ?array
     {
+        self::$releaseProblem = '';
         $body = Http::get(self::releaseUrl(), [], [
             'headers'            => ['Accept: application/vnd.github+json'],
             'timeout'            => 10,
@@ -186,7 +192,10 @@ final class Updater
         ]);
         self::$githubError = Release::requestError($body !== false, Http::getStatus(), Http::getError());
         if (self::$githubError === '') {
-            return Release::parse(json_decode((string) $body, true), self::ASSET, self::packagePrefix());
+            $json = json_decode((string) $body, true);
+            self::$releaseProblem = Release::parseProblem($json, self::ASSET, self::packagePrefix());
+
+            return Release::parse($json, self::ASSET, self::packagePrefix());
         }
         if ((string) Registry::get('config.quissly_update_url') !== '') {
             return null;

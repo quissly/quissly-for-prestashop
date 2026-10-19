@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Quissly\PrestaShop\Admin;
 
+use Quissly\PrestaShop\Refusal;
 use Quissly\PrestaShop\StatusReport;
 
 /**
@@ -96,7 +97,11 @@ final class DashboardView
         if (!$active && !empty($m['status']['reasons'])) {
             $items = '';
             foreach ($m['status']['reasons'] as $reason) {
-                $items .= '<li>' . self::e(self::t(self::REASONS[$reason] ?? (string) $reason)) . '</li>';
+                $alert = $m['status']['auth_alert'] ?? null;
+                $text = $reason === 'auth_error' && !empty($alert)
+                    ? Refusal::forMerchant((int) $alert['status'], (string) ($alert['detail'] ?? ''), (string) ($m['status']['source'] ?? ''))
+                    : self::t(self::REASONS[$reason] ?? (string) $reason);
+                $items .= '<li>' . self::e($text) . '</li>';
             }
             $html .= '<ul class="quissly-dash__reasons">' . $items . '</ul>';
         }

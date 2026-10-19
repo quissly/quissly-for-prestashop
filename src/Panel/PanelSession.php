@@ -77,7 +77,9 @@ final class PanelSession
     /** The iframe URL: the panel, bootstrapped with the session. */
     public static function embedUrl(string $panelUrl, string $accessToken, string $refreshToken): string
     {
-        return rtrim($panelUrl, '/') . '/?' . http_build_query(
+        // The fragment (#): the browser never sends it to a server, so the tokens stay out of access
+        // logs and Referer headers; the panel reads them there first (the query string only for older links).
+        return rtrim($panelUrl, '/') . '/#' . http_build_query(
             ['access_token' => $accessToken, 'refresh_token' => $refreshToken],
             '',
             '&',

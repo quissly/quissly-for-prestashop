@@ -52,6 +52,7 @@ class Quissly extends Module
         'displayHeader',
         'displayAfterBodyOpeningTag',
         'actionCartUpdateQuantityBefore',
+        'actionCartSave',
         'actionWishlistAddProduct',
         'actionOrderStatusPostUpdate',
         // The catalog sync (src/Sync/Sync): what changes a product Quissly holds.
@@ -77,7 +78,7 @@ class Quissly extends Module
     {
         $this->name = 'quissly';
         $this->tab = 'search_filter';
-        $this->version = '1.0.8';
+        $this->version = '1.0.9';
         $this->author = 'Quissly';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -146,6 +147,9 @@ class Quissly extends Module
         return $tab->save() ? (int) $tab->id : 0;
     }
 
+    /** @var array<string, mixed>|null an add to cart PrestaShop has not saved yet */
+    private static $pendingAddToCart;
+
     /**
      * The upgrade step of an update whose files are in place - put there by the automatic
      * update (src/Update/Updater) or by hand: what Module Manager's "Upgrade" button does (the
@@ -166,6 +170,16 @@ class Quissly extends Module
                 return; // not installed
             }
             if (!Tools::version_compare($this->version, $from, '>')) {
+                // Already this version in PrestaShop's records: installed, or upgraded through
+                // Module Manager's own upload - which runs the upgrade scripts but registers no new
+                // hook, table, menu entry or setting. Done here once per version (all repeatable).
+                $ok = $this->registerHook(self::HOOKS)
+                    && $this->installMenu()
+                    && QuisslySchema::install()
+                    && \Quissly\PrestaShop\Platform\Settings::installDefaults();
+                if (!$ok) {
+                    \Quissly\PrestaShop\Logger::error('Quissly could not register its hooks, tables or menu for this version', ['version' => $this->version]);
+                }
                 Configuration::updateValue(self::RUNNING_VERSION, $this->version);
 
                 return;
@@ -312,13 +326,43 @@ class Quissly extends Module
     /** add_to_cart: a storefront cart gaining a product (not a quantity lowered or removed). */
     public function hookActionCartUpdateQuantityBefore($params)
     {
+        // Held, not recorded: PrestaShop runs this hook before it checks the minimum quantity and
+        // may still refuse the add; it is recorded when the cart is saved (actionCartSave), which
+        // only a done add reaches. An add beyond the stock is not recorded at all: the shop's own
+        // Add to cart puts it in the cart unchecked, then says "no longer available in this
+        // quantity" and checkout refuses it (5000 units of a product with 300 were sent as added).
+        self::$pendingAddToCart = null;
         if (!($this->context->controller instanceof FrontController) || ($params['operator'] ?? '') !== 'up' || !isset($params['product'])) {
             return;
         }
-        \Quissly\PrestaShop\Events\Recorder::shopper(
-            \Quissly\PrestaShop\Events\EventBody::ADD_TO_CART,
-            \Quissly\PrestaShop\Events\EventBody::addToCart((int) $params['product']->id, (int) ($params['id_product_attribute'] ?? 0), (float) ($params['quantity'] ?? 1))
-        );
+        $attribute = (int) ($params['id_product_attribute'] ?? 0);
+        $quantity = (int) ($params['quantity'] ?? 1);
+        if (isset($params['cart']) && $params['cart'] instanceof Cart && self::beyondStock($params['cart'], $params['product'], $attribute, $quantity)) {
+            return;
+        }
+        self::$pendingAddToCart = \Quissly\PrestaShop\Events\EventBody::addToCart((int) $params['product']->id, $attribute, (float) $quantity);
+    }
+
+    /** Whether adding $quantity takes the cart past what can be ordered (PrestaShop's own rule). */
+    private static function beyondStock(Cart $cart, Product $product, int $attribute, int $quantity): bool
+    {
+        if (!Configuration::get('PS_STOCK_MANAGEMENT') || Product::isAvailableWhenOutOfStock(StockAvailable::outOfStock((int) $product->id))) {
+            return false;
+        }
+        $inCart = (int) ($cart->getProductQuantity((int) $product->id, $attribute)['quantity'] ?? 0);
+
+        return $inCart + $quantity > (int) StockAvailable::getQuantityAvailableByProduct((int) $product->id, $attribute);
+    }
+
+    /** add_to_cart, now that PrestaShop has saved the add held by hookActionCartUpdateQuantityBefore. */
+    public function hookActionCartSave($params)
+    {
+        if (self::$pendingAddToCart === null) {
+            return;
+        }
+        $event = self::$pendingAddToCart;
+        self::$pendingAddToCart = null;
+        \Quissly\PrestaShop\Events\Recorder::shopper(\Quissly\PrestaShop\Events\EventBody::ADD_TO_CART, $event);
     }
 
     /** add_to_wishlist: PrestaShop's Wishlist module (blockwishlist 2.x) adding a product. */

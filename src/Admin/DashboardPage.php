@@ -13,6 +13,7 @@ use Quissly\PrestaShop\Features;
 use Quissly\PrestaShop\HealthStore;
 use Quissly\PrestaShop\Panel\QChatDirectory;
 use Quissly\PrestaShop\Platform\Text;
+use Quissly\PrestaShop\Refusal;
 use Quissly\PrestaShop\SortMap;
 use Quissly\PrestaShop\StatusReport;
 use Quissly\PrestaShop\Sync\DbSyncStore;
@@ -67,17 +68,37 @@ final class DashboardPage
         if (!$credentials->isConfigured()) {
             return ['error', Text::t('quissly_search.not_configured')];
         }
+        $probe = self::probe($credentials);
+        if ($probe['ok']) {
+            return ['success', Text::t('quissly_search.test_connection_ok', ['[count]' => $probe['count']])];
+        }
+        if ($probe['refused']) {
+            return ['error', Refusal::forMerchant($probe['status'], $probe['detail'], $credentials->source())];
+        }
+
+        return ['warning', Text::t('quissly_search.test_connection_fail', ['[status]' => $probe['status']])];
+    }
+
+    /**
+     * One QSearch, as Test connection always sent ('test', 1 result): whether Quissly answers this
+     * store's searches, recorded for the status pages (HealthStore) - a refusal (401/402/403) with
+     * Quissly's own reason. Finish Setup runs it too.
+     *
+     * @return array{ok:bool, refused:bool, status:int, detail:string, count:int}
+     */
+    public static function probe(Credentials $credentials): array
+    {
         try {
             $result = (new Client($credentials))->qsearch('test', 'admin_test_connection', 1, 1, SortMap::Q_RELEVANCE, SortMap::T_DESC);
             HealthStore::recordSuccess();
 
-            return ['success', Text::t('quissly_search.test_connection_ok', ['[count]' => $result->numTotalResults])];
+            return ['ok' => true, 'refused' => false, 'status' => 200, 'detail' => '', 'count' => (int) $result->numTotalResults];
         } catch (AuthException $e) {
-            HealthStore::recordFailure($e->getHttpStatus(), $e->getMessage());
+            HealthStore::recordFailure($e->getHttpStatus(), $e->detail());
 
-            return ['error', Text::t('quissly_search.test_connection_auth_fail', ['[status]' => $e->getHttpStatus()])];
+            return ['ok' => false, 'refused' => true, 'status' => $e->getHttpStatus(), 'detail' => $e->detail(), 'count' => 0];
         } catch (QuisslyException $e) {
-            return ['warning', Text::t('quissly_search.test_connection_fail', ['[status]' => $e->getHttpStatus()])];
+            return ['ok' => false, 'refused' => false, 'status' => $e->getHttpStatus(), 'detail' => '', 'count' => 0];
         }
     }
 

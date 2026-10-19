@@ -49,6 +49,9 @@ final class StatusReport
                 $authAlert = [
                     'status'  => $health['last_status'],
                     'message' => $health['last_message'],
+                    // Quissly's own reason; a row written before 1.0.9 holds the module's
+                    // "QSearch returned 403 (...)" instead, which says nothing new.
+                    'detail'  => strpos($health['last_message'], 'QSearch returned') === 0 ? '' : $health['last_message'],
                     'at'      => $health['last_failure_at'],
                 ];
             }
@@ -75,6 +78,7 @@ final class StatusReport
             'configured'      => $configured,
             'toggle_on'       => $toggleOn,
             'environment'     => $configured ? $credentials->environment() : '',
+            'source'          => $credentials->source(),
             'reasons'         => $reasons,
             'auth_alert'      => $authAlert,
             'last_success_at' => $health['last_success_at'] ?? 0,

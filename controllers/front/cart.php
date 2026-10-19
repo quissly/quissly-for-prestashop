@@ -59,6 +59,12 @@ class QuisslyCartModuleFrontController extends ModuleFrontController
         if ($attribute > 0 && !Db::getInstance()->getValue('SELECT 1 FROM ' . _DB_PREFIX_ . 'product_attribute WHERE id_product = ' . (int) $productId . ' AND id_product_attribute = ' . (int) $attribute)) {
             return ['ok' => false]; // not one of this product's combinations
         }
+        // A product that does not exist (or is off) is refused here: PrestaShop's cart answered it
+        // with a fatal error and a 500 page instead of JSON.
+        $product = new Product($productId, false, (int) $this->context->language->id);
+        if (!Validate::isLoadedObject($product) || !$product->active) {
+            return ['ok' => false];
+        }
         $context = $this->context;
         if (!Validate::isLoadedObject($context->cart)) {
             // A shopper with no cart yet: one, kept on their cookie as PrestaShop does.
@@ -76,7 +82,13 @@ class QuisslyCartModuleFrontController extends ModuleFrontController
         if ($attribute === 0) {
             $attribute = (int) Product::getDefaultAttribute($productId);
         }
-        $result = $context->cart->updateQty(abs($delta), $productId, $attribute, false, $delta > 0 ? 'up' : 'down');
+        try {
+            $result = $context->cart->updateQty(abs($delta), $productId, $attribute, false, $delta > 0 ? 'up' : 'down');
+        } catch (\Throwable $e) {
+            \Quissly\PrestaShop\Logger::error('Chat cart: PrestaShop refused the change', ['exception' => get_class($e)]);
+
+            return ['ok' => false];
+        }
         $quantity = (int) ($context->cart->getProductQuantity($productId, $attribute)['quantity'] ?? 0);
 
         return ['ok' => $result === true || $result > 0, 'id_product' => $productId, 'id_product_attribute' => $attribute, 'quantity' => $quantity];

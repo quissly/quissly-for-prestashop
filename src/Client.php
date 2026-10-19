@@ -66,7 +66,7 @@ final class Client implements QSearchClient
             });
         }
 
-        $this->throwForStatus($status);
+        $this->throwForStatus($status, (string) $response);
     }
 
     /**
@@ -105,7 +105,7 @@ final class Client implements QSearchClient
             throw new TransportException('Media search transport failure: ' . (Http::getError() ?: 'no response'));
         }
         if ($status !== 200) {
-            $this->throwForStatus($status);
+            $this->throwForStatus($status, (string) $response);
         }
         $decoded = json_decode((string) $response, true);
 
@@ -238,12 +238,13 @@ final class Client implements QSearchClient
      *
      * @throws QuisslyException
      */
-    private function throwForStatus(int $status): void
+    private function throwForStatus(int $status, string $body = ''): void
     {
-        // 401/402/403 -> merchant config/billing problem, NO fallback swap.
+        // 401/402/403 -> merchant config/billing problem, NO fallback swap. Quissly's own reason
+        // ("No active quota grant for this service") is kept for the merchant's message.
         if ($status === 401 || $status === 402 || $status === 403) {
             Logger::error('QSearch authorization/plan failure', ['status' => $status]);
-            throw new AuthException('QSearch returned ' . $status . ' (auth/payment/plan).', $status);
+            throw new AuthException('QSearch returned ' . $status . ' (auth/payment/plan).', $status, null, self::detail($body));
         }
 
         if ($status === 429) {
@@ -265,5 +266,15 @@ final class Client implements QSearchClient
         // Any other unexpected status -> treat as our bug and fall back.
         Logger::error('QSearch unexpected status', ['status' => $status]);
         throw new ClientErrorException('QSearch returned unexpected status ' . $status . '.', $status);
+    }
+
+    /** Quissly's reason for refusing (the `detail` of its error answer), as plain text, or ''. */
+    public static function detail(string $body): string
+    {
+        $decoded = json_decode($body, true);
+        $detail = is_array($decoded) && isset($decoded['detail']) && is_string($decoded['detail']) ? $decoded['detail'] : '';
+        $detail = trim((string) preg_replace('/\s+/', ' ', strip_tags($detail)));
+
+        return function_exists('mb_substr') ? mb_substr($detail, 0, 200) : substr($detail, 0, 200);
     }
 }
