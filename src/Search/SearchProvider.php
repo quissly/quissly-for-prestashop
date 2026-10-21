@@ -9,7 +9,8 @@ use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchContext;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchProviderInterface;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchQuery;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchResult;
-use PrestaShop\PrestaShop\Core\Product\Search\SortOrderFactory;
+use PrestaShop\PrestaShop\Core\Product\Search\SortOrder;
+use PrestaShop\PrestaShop\Core\Product\Search\SortOrdersCollection;
 use Quissly\PrestaShop\Client;
 use Quissly\PrestaShop\Config;
 use Quissly\PrestaShop\Credentials;
@@ -41,6 +42,9 @@ use Quissly\PrestaShop\Sync\SyncWorker;
  * PrestaShop's search instead; on a later page it shows an empty page (a native swap would
  * mix two result sets across pages). 401/402/403 also run PrestaShop's search, and the
  * merchant is told on the Dashboard. A 200 with no documents is a real "nothing found".
+ *
+ * Sorting: Quissly sorts (SortMap) - price, name, sales and date added; relevance otherwise. The
+ * sort control offers PrestaShop's defaults plus sales and date added (SortMap::SEARCH_PAGE_EXTRAS).
  */
 final class SearchProvider implements ProductSearchProviderInterface
 {
@@ -165,13 +169,38 @@ final class SearchProvider implements ProductSearchProviderInterface
         }
         $result = new ProductSearchResult();
         $result->setProducts($products)->setTotalProductsCount($total);
-        $result->setAvailableSortOrders((new SortOrderFactory(\Context::getContext()->getTranslator()))->getDefaultSortOrders());
+        $result->setAvailableSortOrders(self::sortOrders());
 
         return $result;
     }
 
+    /**
+     * The sort control while Quissly answers: PrestaShop's search-page defaults (Relevance, name,
+     * price), then the sorts PrestaShop has on its Best sellers and New products pages, in its own
+     * words - Quissly sorts by those too.
+     *
+     * @return list<SortOrder>
+     */
+    private static function sortOrders(): array
+    {
+        $translator = \Context::getContext()->getTranslator();
+        $orders = (new SortOrdersCollection($translator))->getDefaults();
+        foreach (SortMap::SEARCH_PAGE_EXTRAS as list($field, $direction, $label)) {
+            $orders[] = (new SortOrder('product', $field, $direction))->setLabel($translator->trans($label, [], 'Shop.Theme.Catalog'));
+        }
+
+        return $orders;
+    }
+
     private function nativeResult(ProductSearchContext $context, ProductSearchQuery $query)
     {
+        // PrestaShop's search cannot sort by sales (its query has no such column: no results, or a
+        // database error in debug mode) - only offered while Quissly answers, so it falls back to Relevance.
+        $order = $query->getSortOrder();
+        if ($order !== null && $order->getField() === 'sales') {
+            $query->setSortOrder(new SortOrder('product', 'position', 'desc'));
+        }
+
         return $this->native !== null ? $this->native->runQuery($context, $query) : new ProductSearchResult();
     }
 
@@ -199,19 +228,20 @@ final class SearchProvider implements ProductSearchProviderInterface
     }
 
     /**
-     * PrestaShop's sort control to Quissly's codes: price (asc/desc) is the only sort Quissly
-     * honours besides relevance; anything else is relevance.
+     * PrestaShop's sort control to Quissly's codes (SortMap): price, name, sales and date added,
+     * each way; anything else - Relevance, the search page's default when the shopper has not
+     * picked a sort - is relevance.
      *
      * @return array{0: int, 1: int} sort_by, sort_type
      */
     private static function sort(ProductSearchQuery $query): array
     {
         $order = $query->getSortOrder();
-        if ($order !== null && $order->getField() === 'price') {
-            return [SortMap::Q_PRICE, strtolower((string) $order->getDirection()) === 'desc' ? SortMap::T_DESC : SortMap::T_ASC];
+        if ($order === null) {
+            return [SortMap::Q_RELEVANCE, SortMap::T_ASC];
         }
 
-        return [SortMap::Q_RELEVANCE, SortMap::T_ASC];
+        return SortMap::resolve((string) $order->getEntity(), (string) $order->getField(), (string) $order->getDirection());
     }
 
     private static function mediaToken(): string

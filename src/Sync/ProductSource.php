@@ -32,6 +32,10 @@ use Quissly\PrestaShop\Platform\Db;
  * "available for order". The in-stock state each load finds is remembered (stockChanged() tells
  * a quantity change that flips it from one that does not).
  *
+ * Sorting: the product's sales (product_sale.quantity - what PrestaShop's Best sellers and its
+ * "sales" sort count) and the date it was added (date_add, the New products sort), for Quissly's
+ * popularity and date sorts (ProductMapper::sortFields).
+ *
  * Features: the ones the Catalog data checklist sends (CatalogFeatures; PrestaShop shows every
  * feature on the product page, so all by default), several values of one feature joined; the
  * brand (manufacturer) as "Brand".
@@ -110,7 +114,17 @@ final class ProductSource
             'url'               => (string) $link->getProductLink($product, null, null, null, $language, $shopId),
             'company'           => '',
             'bundles'           => [],
+            'popularity'        => (int) Db::field('SELECT quantity FROM ?:product_sale WHERE id_product = ?i', $productId),
+            'created_at'        => ProductMapper::unixTime((string) $product->date_add, self::timezone()),
         ];
+    }
+
+    /** The shop's time zone, in which PrestaShop writes its dates. */
+    private static function timezone(): string
+    {
+        $timezone = (string) \Configuration::get('PS_TIMEZONE');
+
+        return $timezone !== '' ? $timezone : date_default_timezone_get();
     }
 
     /**

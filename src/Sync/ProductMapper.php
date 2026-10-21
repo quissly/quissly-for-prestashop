@@ -42,6 +42,14 @@ namespace Quissly\PrestaShop\Sync;
  * replaces the record's own metadata (sku, vendor, an option...). A variant carries only
  * the features whose value differs from its parent's.
  *
+ * Sorting (SortMap): `metadata.popularity` (the product's sales, PrestaShop's product_sale
+ * quantity - 0 when it has none, never left out: a record without it goes last in a popularity
+ * sort) and `metadata.created_at` (when it was added, unix seconds; left out when the product has
+ * no date) - integers always, as Quissly compares them as they come and a string among the ints
+ * would break the sort. On the product's record only: its variants inherit the product's metadata
+ * in Quissly. Neither is folded into any text, and an option or feature of that name gets the attr_
+ * prefix (optionKey) so it can never replace them.
+ *
  * Bundles (CS-Cart's Product bundles add-on): a bundle is not a product - it has no
  * page and cannot be a search result; it is an offer shown on its members' pages. So
  * it travels with each member, as `metadata.bundles` [{id, name, description,
@@ -76,6 +84,7 @@ final class ProductMapper
     public static function map(array $product): array
     {
         $record = self::record($product);
+        $record['metadata'] += self::sortFields($product);
 
         $variations = (array) ($product['variations'] ?? []);
         if ($variations === []) {
@@ -117,6 +126,44 @@ final class ProductMapper
         $record['variants'] = $variants;
 
         return $record;
+    }
+
+    /**
+     * The fields Quissly's popularity and date sorts read, as integers (see the class comment).
+     *
+     * @param array<string,mixed> $product
+     * @return array{popularity: int, created_at?: int}
+     */
+    private static function sortFields(array $product): array
+    {
+        $fields = ['popularity' => max(0, (int) ($product['popularity'] ?? 0))];
+        $created = $product['created_at'] ?? null;
+        if ((is_int($created) || (is_string($created) && ctype_digit($created))) && (int) $created > 0) {
+            $fields['created_at'] = (int) $created;
+        }
+
+        return $fields;
+    }
+
+    /**
+     * A date and time as the shop stores it (PrestaShop writes `date_add` in the shop's time zone,
+     * PS_TIMEZONE) as unix seconds; null for an empty or zero date ("0000-00-00 00:00:00"), one
+     * that cannot be read, or an unknown time zone.
+     */
+    public static function unixTime(string $local, string $timezone): ?int
+    {
+        $local = trim($local);
+        if ($local === '' || strpos($local, '0000-00-00') === 0) {
+            return null;
+        }
+        try {
+            $date = new \DateTime($local, new \DateTimeZone($timezone !== '' ? $timezone : 'UTC'));
+        } catch (\Exception $e) {
+            return null;
+        }
+        $seconds = $date->getTimestamp();
+
+        return $seconds > 0 ? $seconds : null;
     }
 
     /**
@@ -332,7 +379,7 @@ final class ProductMapper
     {
         $key = trim((string) preg_replace('/[^a-z0-9]+/', '_', strtolower($name)), '_');
         $reserved = ['id', 'title', 'description', 'category', 'images', 'url', 'in_stock', 'original_price',
-            'discounted_price', 'discount_percent', 'variants', 'metadata', 'sku', 'categories', 'vendor', 'selected_options', 'bundles'];
+            'discounted_price', 'discount_percent', 'variants', 'metadata', 'sku', 'categories', 'vendor', 'selected_options', 'bundles', 'popularity', 'created_at'];
 
         return $key === '' || in_array($key, $reserved, true) ? 'attr_' . $key : $key;
     }

@@ -117,8 +117,11 @@ For this the `modules/quissly` folder must be writable by the web server, and th
 
 ## How search behaves
 
-- **Order:** results come in Quissly's order. Sorting by **price** is honoured; other sorts keep
-  Quissly's order.
+- **Order:** results come in Quissly's order (Relevance) until the shopper picks a sort. Sorting by
+  **name**, **price**, **sales** (best sellers first) and **date added** (newest or oldest first) is
+  done by Quissly across all the results; any other sort keeps Quissly's order. Sales and date added
+  are sent with each product: products synced by an earlier version come last in those two sorts
+  until they are sent again - **Sync all products again** on the Dashboard sends them all.
 - **Filters:** when a shopper narrows a search with the faceted search filters, PrestaShop's own
   search answers, so the filter is always respected.
 - **Products with combinations** are one card, as in your catalog; Quissly matches the combination

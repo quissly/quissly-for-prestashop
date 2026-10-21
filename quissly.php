@@ -69,6 +69,7 @@ class Quissly extends Module
         'actionObjectImageUpdateAfter',
         'actionObjectImageDeleteAfter',
         'actionUpdateQuantity',
+        'actionOrderStatusUpdate',
     ];
 
     /** The version whose upgrade step last ran (completeUpdate()). */
@@ -78,7 +79,7 @@ class Quissly extends Module
     {
         $this->name = 'quissly';
         $this->tab = 'search_filter';
-        $this->version = '1.0.10';
+        $this->version = '1.0.11';
         $this->author = 'Quissly';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -301,6 +302,29 @@ class Quissly extends Module
     {
         try {
             \Quissly\PrestaShop\Sync\Sync::quantityChanged((int) ($params['id_product'] ?? 0));
+        } catch (\Throwable $e) {
+            \Quissly\PrestaShop\Logger::error('Quissly catalog hook failed', ['exception' => get_class($e)]);
+        }
+    }
+
+    /**
+     * Catalog sync: an order about to start or stop counting as a sale (its products' sales count,
+     * Quissly's popularity sort, changes). Runs before PrestaShop applies the status, so the
+     * order's current status is still the old one (none for a new order).
+     */
+    public function hookActionOrderStatusUpdate($params)
+    {
+        try {
+            if (!isset($params['newOrderStatus'], $params['id_order']) || !$params['newOrderStatus'] instanceof OrderState) {
+                return;
+            }
+            $order = new Order((int) $params['id_order']);
+            $old = Validate::isLoadedObject($order) ? $order->getCurrentOrderState() : null;
+            \Quissly\PrestaShop\Sync\Sync::salesChanged(
+                (int) $params['id_order'],
+                $old instanceof OrderState && Validate::isLoadedObject($old) ? (bool) $old->logable : null,
+                (bool) $params['newOrderStatus']->logable
+            );
         } catch (\Throwable $e) {
             \Quissly\PrestaShop\Logger::error('Quissly catalog hook failed', ['exception' => get_class($e)]);
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Quissly\PrestaShop\Sync;
 
 use Quissly\PrestaShop\Credentials;
+use Quissly\PrestaShop\Platform\Db;
 
 /**
  * PrestaShop entry points into the sync: the worker wired to the live pieces, a full sync,
@@ -16,8 +17,9 @@ use Quissly\PrestaShop\Credentials;
  * combinations or images added, changed or deleted, a specific price (a sale) for it added,
  * changed or deleted, and a quantity change that moves it between in and out of stock
  * (ProductSource::stockChanged - every order changes quantities, and only a flip changes what
- * Quissly holds). What does not: a catalog price rule, a renamed category or feature - the next
- * full sync ("Sync now") sends those.
+ * Quissly holds), and an order whose status starts or stops counting as a sale (salesChanged -
+ * PrestaShop's product_sale, the popularity Quissly sorts by). What does not: a catalog price
+ * rule, a renamed category or feature - the next full sync ("Sync now") sends those.
  */
 final class Sync
 {
@@ -84,6 +86,30 @@ final class Sync
         if ($productId > 0 && Credentials::fromRegistry()->isConfigured() && (new ProductSource())->stockChanged($productId)) {
             self::queue($productId, SyncStore::OP_UPSERT);
         }
+    }
+
+    /**
+     * An order's status is about to change (actionOrderStatusUpdate, before PrestaShop applies it):
+     * when the order starts or stops counting as a sale - PrestaShop's own rule, the status's
+     * "Consider the associated order as validated" (logable) flipping, which is when it adds the
+     * order to or takes it from product_sale - its products are queued, so Quissly gets their new
+     * sales count. Once per payment or cancellation, not per status: shipped and delivered do not
+     * flip it. The queue holds a product once, however many orders queue it.
+     */
+    public static function salesChanged(int $orderId, ?bool $wasSale, bool $isSale): void
+    {
+        if ($orderId <= 0 || !self::saleFlips($wasSale, $isSale) || !Credentials::fromRegistry()->isConfigured()) {
+            return;
+        }
+        foreach (Db::fields('SELECT DISTINCT product_id FROM ?:order_detail WHERE id_order = ?i', $orderId) as $productId) {
+            self::queue((int) $productId, SyncStore::OP_UPSERT);
+        }
+    }
+
+    /** Whether an order moving from status $wasSale (null: no status yet) to $isSale changes product_sale. */
+    public static function saleFlips(?bool $wasSale, bool $isSale): bool
+    {
+        return (bool) $wasSale !== $isSale;
     }
 
     private static function queue(int $productId, string $operation): void
