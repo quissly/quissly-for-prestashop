@@ -23,6 +23,7 @@ final class Settings
         'enable_image'           => 'N',
         'enable_qchat'           => 'N',
         'enable_events'          => 'Y',
+        'enable_order_status'    => 'Y',
         'overlay_suggestions'    => 'Y',
         'overlay_recent'         => 'Y',
         'most_loved'             => 'N',

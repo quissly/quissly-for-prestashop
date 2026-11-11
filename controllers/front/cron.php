@@ -32,6 +32,8 @@ class QuisslyCronModuleFrontController extends ModuleFrontController
         @set_time_limit(\Quissly\PrestaShop\Sync\Sync::CRON_BUDGET_SECONDS + 120);
         // The version report when due, the catalog queue, then the shopping events (src/Events/Runner).
         \Quissly\PrestaShop\Events\Runner::versionReport($store, (string) $this->module->version);
+        // Where QChat asks about orders (src/Orders/LookupRegistration), told to Quissly when due.
+        \Quissly\PrestaShop\Orders\LookupRegistration::maybe($store, time());
         $sync = \Quissly\PrestaShop\Sync\Sync::run(\Quissly\PrestaShop\Sync\Sync::CRON_BUDGET_SECONDS, 'cron');
         $events = \Quissly\PrestaShop\Events\Runner::send(40.0);
         // After the first sync: Quissly's Search Examples and generated Search Suggestions, when due.

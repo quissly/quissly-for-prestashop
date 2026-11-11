@@ -30,10 +30,10 @@ use Quissly\PrestaShop\Sync\DbSyncStore;
 final class ConfigurationPage
 {
     /** The Features section's settings, in the other plugins' order. */
-    private const FEATURES = ['search_interception', 'enable_overlay', 'overlay_layout', 'overlay_mount_selector', 'enable_quick', 'quick_style', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'guest_consent_cookie'];
+    private const FEATURES = ['search_interception', 'enable_overlay', 'overlay_layout', 'overlay_mount_selector', 'enable_quick', 'quick_style', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'guest_consent_cookie', 'enable_order_status'];
 
     /** The settings drawn as switches; the rest of Settings::DEFAULTS are text, lists or selects. */
-    private const SWITCHES = ['search_interception', 'enable_overlay', 'enable_quick', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'overlay_suggestions', 'overlay_recent', 'most_loved'];
+    private const SWITCHES = ['search_interception', 'enable_overlay', 'enable_quick', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'enable_order_status', 'overlay_suggestions', 'overlay_recent', 'most_loved'];
 
     /** @var ?array<string, string> the switches the store's plan leaves out, while the page is drawn */
     private static $locked = null;
