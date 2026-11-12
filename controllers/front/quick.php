@@ -30,8 +30,10 @@ class QuisslyQuickModuleFrontController extends ModuleFrontController
             }
         );
 
-        // REMOTE_ADDR only, as the media endpoint.
-        $answer = $endpoint->handle((string) Tools::getValue('q', ''), $enabled, (string) ($_SERVER['REMOTE_ADDR'] ?? ''), time());
+        // REMOTE_ADDR only, as the media endpoint; then the shop-wide limit (src/StorefrontGuard).
+        $answer = $enabled && !\Quissly\PrestaShop\StorefrontGuard::allowedNow('quick')
+            ? ['status' => 429, 'body' => ['error' => 'rate_limited']]
+            : $endpoint->handle((string) Tools::getValue('q', ''), $enabled, (string) ($_SERVER['REMOTE_ADDR'] ?? ''), time());
 
         http_response_code((int) $answer['status']);
         header('Content-Type: application/json; charset=utf-8');

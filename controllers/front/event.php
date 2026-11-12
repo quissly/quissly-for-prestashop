@@ -2,7 +2,8 @@
 /**
  * A storefront page's shopping event (views/js/events.js): view_PDP or search, as JSON, with the
  * storefront token. 404 while "Shopping activity" is off (nobody learns the endpoint exists),
- * 429 past 60 a minute per visitor, 413 over 1 KB, 400 for anything else; 204 when queued.
+ * 429 past 60 a minute per visitor or the shop-wide limit (src/StorefrontGuard), 413 over 1 KB, 400 for
+ * anything else; 204 when queued.
  */
 class QuisslyEventModuleFrontController extends ModuleFrontController
 {
@@ -17,7 +18,8 @@ class QuisslyEventModuleFrontController extends ModuleFrontController
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !\Quissly\PrestaShop\Events\Recorder::enabled()
             || !hash_equals((string) Tools::getToken(false), (string) Tools::getValue('security_hash'))) {
             $status = 404;
-        } elseif (!(new \Quissly\PrestaShop\Media\DbRateLimiter())->allow('events|' . (string) ($_SERVER['REMOTE_ADDR'] ?? ''), 60, 60, time())) {
+        } elseif (!(new \Quissly\PrestaShop\Media\DbRateLimiter())->allow('events|' . (string) ($_SERVER['REMOTE_ADDR'] ?? ''), 60, 60, time())
+            || !\Quissly\PrestaShop\StorefrontGuard::allowedNow('event')) {
             $status = 429;
         } elseif (strlen($raw) > 1024) {
             $status = 413;

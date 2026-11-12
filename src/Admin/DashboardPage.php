@@ -33,8 +33,16 @@ final class DashboardPage
         $credentials = Credentials::fromRegistry();
         $connected = $credentials->isConfigured();
         $lastCron = $store->getState('last_cron');
+        $available = \Quissly\PrestaShop\Update\Updater::available(
+            $store->getState(\Quissly\PrestaShop\Update\Updater::AVAILABLE_STATE),
+            \Quissly\PrestaShop\Update\Updater::installedVersion()
+        );
+        if ($available !== null) {
+            $urls['release'] = \Quissly\PrestaShop\Update\Updater::releasePageUrl($available);
+        }
 
         return DashboardView::render([
+            'update_available' => (string) $available,
             'connected'       => $connected,
             'environment'     => $connected ? $credentials->environment() : '',
             'status'          => StatusReport::build($credentials, $store),

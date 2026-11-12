@@ -25,6 +25,11 @@ class QuisslyCartModuleFrontController extends ModuleFrontController
             http_response_code(403);
             $this->ajaxDie(json_encode(['ok' => false]));
         }
+        // The shop-wide limit (src/StorefrontGuard), on top of the token.
+        if (!\Quissly\PrestaShop\StorefrontGuard::allowedNow('cart_adjust')) {
+            http_response_code(429);
+            $this->ajaxDie(json_encode(['ok' => false]));
+        }
         $this->ajaxDie(json_encode($this->update((string) Tools::getValue('product_id'), (int) Tools::getValue('delta'))));
     }
 

@@ -35,8 +35,11 @@ class QuisslyMediaModuleFrontController extends ModuleFrontController
             }
         );
 
-        // REMOTE_ADDR only: X-Forwarded-For is client-spoofable (a fresh bucket per header value).
-        $answer = $endpoint->handle($kind, (string) Tools::getValue($kind === 'voice' ? 'audio' : 'image', ''), $enabled, (string) ($_SERVER['REMOTE_ADDR'] ?? ''), time());
+        // REMOTE_ADDR only: X-Forwarded-For is client-spoofable (a fresh bucket per header value). Then the
+        // shop-wide limit (src/StorefrontGuard): rotating addresses still cannot spend more than that.
+        $answer = $enabled && !\Quissly\PrestaShop\StorefrontGuard::allowedNow($kind)
+            ? ['status' => 429, 'body' => ['error' => 'rate_limited']]
+            : $endpoint->handle($kind, (string) Tools::getValue($kind === 'voice' ? 'audio' : 'image', ''), $enabled, (string) ($_SERVER['REMOTE_ADDR'] ?? ''), time());
 
         http_response_code((int) $answer['status']);
         header('Content-Type: application/json; charset=utf-8');

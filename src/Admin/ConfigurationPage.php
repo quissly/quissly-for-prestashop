@@ -33,7 +33,7 @@ final class ConfigurationPage
     private const FEATURES = ['search_interception', 'enable_overlay', 'overlay_layout', 'overlay_mount_selector', 'enable_quick', 'quick_style', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'guest_consent_cookie', 'enable_order_status'];
 
     /** The settings drawn as switches; the rest of Settings::DEFAULTS are text, lists or selects. */
-    private const SWITCHES = ['search_interception', 'enable_overlay', 'enable_quick', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'enable_order_status', 'overlay_suggestions', 'overlay_recent', 'most_loved'];
+    private const SWITCHES = ['search_interception', 'enable_overlay', 'enable_quick', 'enable_voice', 'enable_image', 'enable_qchat', 'enable_events', 'enable_order_status', 'overlay_suggestions', 'overlay_recent', 'most_loved', 'enable_visit_tick'];
 
     /** @var ?array<string, string> the switches the store's plan leaves out, while the page is drawn */
     private static $locked = null;
@@ -69,7 +69,7 @@ final class ConfigurationPage
                 . self::row('overlay_recent'))
             . self::section('most_loved', Text::t('quissly_search.setting_label.most_loved_header'), self::mostLoved($searchUrl))
             . self::section('catalog', Text::t('quissly_search.setting_label.catalog_header'), self::wide(CatalogView::render(CatalogFeatures::catalog(), CatalogFeatures::choices($store))))
-            . self::section('updates', Text::t('quissly_search.setting_label.updates_header'), self::row('update_check_every'))
+            . self::section('updates', Text::t('quissly_search.setting_label.updates_header'), self::row('update_check_every') . self::row('enable_visit_tick'))
             . '<div class="panel-footer q-config__footer"><button type="submit" class="btn btn-primary pull-right" name="submitQuisslyConfiguration">'
             . '<i class="process-icon-save"></i> ' . self::e(Text::t('quissly_search.save')) . '</button></div>'
             . '</form>';

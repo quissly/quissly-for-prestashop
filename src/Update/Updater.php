@@ -43,6 +43,8 @@ final class Updater
     public const ASSET = 'quissly.zip';
     public const STATE = 'update';
     public const PROBLEM_STATE = 'update_problem';
+    /** On "Never": the newer version the CDN named, for the Dashboard (noticeIfDue()). */
+    public const AVAILABLE_STATE = 'update_available';
     public const CHECK_EVERY = 86400;
     public const RETRY_AFTER = 3600;
 
@@ -60,6 +62,9 @@ final class Updater
     {
         $every = Release::interval(Registry::get('addons.quissly_search.update_check_every'));
         if ($every === Release::NEVER) {
+            // Nothing is installed, but the merchant is still told when a newer version is out.
+            self::noticeIfDue($store, $now);
+
             return;
         }
         $state = $store->getState(self::STATE) ?? [];
@@ -392,6 +397,54 @@ final class Updater
     private static function moduleDir(): string
     {
         return (string) Registry::get('config.dir.addons') . Release::FOLDER . '/';
+    }
+
+    /**
+     * On "Never": once a day, read the CDN's version (no API call, nothing downloaded) and keep the
+     * newer one for the Dashboard and the Quissly pages, which say it is out and how to install it
+     * (as the CS-Cart add-on, after a client's review; PrestaShop has no notification centre for a
+     * module). Never throws.
+     */
+    private static function noticeIfDue(DbSyncStore $store, int $now): void
+    {
+        try {
+            $known = (array) ($store->getState(self::AVAILABLE_STATE) ?? []);
+            if ((int) ($known['checked_at'] ?? 0) > $now - self::CHECK_EVERY) {
+                return;
+            }
+            // Claimed before the network: a second request in the meantime finds it not due.
+            $store->setState(self::AVAILABLE_STATE, ['checked_at' => $now] + $known);
+            $hinted = self::hintedVersion();
+            if ($hinted === null) {
+                return; // the last answer stands; asked again tomorrow
+            }
+            $installed = Release::versionIn((string) @file_get_contents(self::moduleDir() . 'quissly.php')) ?? '0.0.0';
+            $store->setState(self::AVAILABLE_STATE, version_compare($hinted, $installed, '>')
+                ? ['checked_at' => $now, 'version' => $hinted]
+                : ['checked_at' => $now]);
+        } catch (\Throwable $e) {
+            return;
+        }
+    }
+
+    /** The newer version a "Never" shop was told about, null when there is none (or it is installed). */
+    public static function available(?array $state, string $installed): ?string
+    {
+        $version = is_array($state) && is_string($state['version'] ?? null) ? $state['version'] : '';
+
+        return $version !== '' && version_compare($version, $installed, '>') ? $version : null;
+    }
+
+    /** The version of the module's files (what really runs). */
+    public static function installedVersion(): string
+    {
+        return Release::versionIn((string) @file_get_contents(self::moduleDir() . 'quissly.php')) ?? '0.0.0';
+    }
+
+    /** The release page a "Never" shop downloads the newer zip from (Module Manager > Upload a module). */
+    public static function releasePageUrl(string $version): string
+    {
+        return 'https://github.com/' . self::REPOSITORY . '/releases/tag/v' . rawurlencode($version);
     }
 
     /**

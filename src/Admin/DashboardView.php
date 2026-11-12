@@ -71,6 +71,7 @@ final class DashboardView
     public static function render(array $m): string
     {
         return '<style>' . self::STYLE . '</style><div class="q-dash">'
+            . self::updateAvailable($m)
             . self::card(self::searchStatus($m))
             . self::card(self::connection($m))
             . ($m['connected'] ? self::card(self::features($m)) . self::card(self::sync($m)) : '')
@@ -79,6 +80,22 @@ final class DashboardView
             . self::link($m['urls']['settings'], self::t('quissly_search.dash_open_settings'), 'btn')
             . ' ' . self::link($m['urls']['panel'], self::t('quissly_search.dash_open_panel'), 'btn')
             . '</p></div>';
+    }
+
+    /**
+     * "Update check frequency" is Never and a newer version is out (Updater::noticeIfDue): say so, with
+     * the release to download (Module Manager > Upload a module) and the setting that installs it.
+     */
+    private static function updateAvailable(array $m): string
+    {
+        $version = (string) ($m['update_available'] ?? '');
+        if ($version === '') {
+            return '';
+        }
+
+        return '<div class="alert alert-info">' . self::e(self::t('quissly_search.dash_update_available', ['[version]' => $version])) . ' '
+            . self::link((string) ($m['urls']['release'] ?? ''), self::t('quissly_search.dash_download_release', ['[version]' => $version])) . ' · '
+            . self::link((string) ($m['urls']['settings'] ?? ''), self::t('quissly_search.dash_open_settings')) . '</div>';
     }
 
     private static function card(string $html): string

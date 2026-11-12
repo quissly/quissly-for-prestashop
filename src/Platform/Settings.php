@@ -30,6 +30,8 @@ final class Settings
         'most_loved_shown'       => '',
         'most_loved_backups'     => '',
         'update_check_every'     => '30m',
+        // Storefront visits run the cron's work when the server cron is not set up (src/Platform/VisitTick).
+        'enable_visit_tick'      => 'Y',
     ];
 
     /** @var ?array<string, string> this request's plan lock, read once */

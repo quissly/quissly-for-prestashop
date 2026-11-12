@@ -78,6 +78,10 @@ final class Runner
      */
     public static function adminFallback(string $version): void
     {
+        // Never after an AJAX request: its answer must not wait for (or be cut short by) this work.
+        if ((bool) \Tools::getValue('ajax') || strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest') {
+            return;
+        }
         register_shutdown_function(static function () use ($version) {
             $store = new DbSyncStore();
             self::versionReport($store, $version);
