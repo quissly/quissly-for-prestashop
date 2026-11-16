@@ -82,6 +82,9 @@ final class SetupFlow
                     'payTimeout'    => $text('su_pay_timeout'),
                     'payNotYet'     => $text('su_pay_not_yet'),
                     'error'         => $text('su_error'),
+                    // A status check the site's own security refused, and the cron line's lead-in.
+                    'blocked'       => $text('su_blocked'),
+                    'cronMissing'   => $text('su_cron_missing'),
                     'compare'       => $text('su_compare'),
                     'compareBack'   => $text('su_compare_back'),
                     'emailRequired' => $text('su_email_required'),
@@ -293,6 +296,12 @@ final class SetupFlow
             $status['rows'][$key]['detail'] = $row['detail'] === null ? '' : Text::t($row['detail'][0], $row['detail'][1]);
         }
         $status['technical'] = $status['technical'] === null ? '' : Text::t($status['technical'][0], $status['technical'][1]);
+        // Whether the module's cron ran lately: without it (and with visit tick refused by a firewall) the
+        // first sync moves only while this page polls - Go live then shows the Dashboard's cron line.
+        $status['cron'] = [
+            'fresh' => \Quissly\PrestaShop\Platform\VisitTick::cronFresh((int) ((new DbSyncStore())->getState('last_cron')['at'] ?? 0), time()),
+            'line'  => '*/5 * * * * curl -s "' . \Quissly\PrestaShop\Platform\Cron::url() . '"',
+        ];
 
         return ['ok' => true] + $status;
     }

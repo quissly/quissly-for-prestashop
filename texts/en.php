@@ -409,6 +409,8 @@ return [
     'quissly_search.su_email_too_long' => 'Email address is too long.',
     'quissly_search.su_email_updates' => 'Email for account updates',
     'quissly_search.su_error' => 'Could not reach the server. Try again in a minute.',
+    'quissly_search.su_blocked' => 'Your site\'s security refused this page\'s request (HTTP [status]), so the sync and this status have stopped. Reload the page. If this keeps happening, let your admin address through in Cloudflare or your hosting firewall.',
+    'quissly_search.su_cron_missing' => 'The server\'s cron is not running, so products are sent only while this page is open. Add this line to the server\'s crontab:',
     'quissly_search.su_extra' => 'extra requests',
     'quissly_search.su_extra_price' => '[price] per [count]',
     'quissly_search.su_extra_requests' => 'Extra requests',

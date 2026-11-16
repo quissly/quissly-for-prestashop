@@ -409,6 +409,8 @@ return [
     'quissly_search.su_email_too_long' => 'Слишком длинный email.',
     'quissly_search.su_email_updates' => 'Email для уведомлений об аккаунте',
     'quissly_search.su_error' => 'Не удалось связаться с сервером. Попробуйте через минуту.',
+    'quissly_search.su_blocked' => 'Защита вашего сайта заблокировала запрос этой страницы (HTTP [status]), поэтому синхронизация и статус остановились. Обновите страницу. Если это повторится, разрешите адрес админки в Cloudflare или в защите хостинга.',
+    'quissly_search.su_cron_missing' => 'Cron на сервере не запускается, поэтому товары отправляются, только пока эта страница открыта. Добавьте эту строку в crontab сервера:',
     'quissly_search.su_extra' => 'доп. запросы',
     'quissly_search.su_extra_price' => '[price] за [count]',
     'quissly_search.su_extra_requests' => 'Доп. запросы',

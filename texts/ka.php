@@ -409,6 +409,8 @@ return [
     'quissly_search.su_email_too_long' => 'ელფოსტა ძალიან გრძელია.',
     'quissly_search.su_email_updates' => 'ელფოსტა ანგარიშის შეტყობინებებისთვის',
     'quissly_search.su_error' => 'სერვერთან დაკავშირება ვერ მოხერხდა. სცადეთ ერთ წუთში.',
+    'quissly_search.su_blocked' => 'თქვენი საიტის დაცვამ ამ გვერდის მოთხოვნა დაბლოკა (HTTP [status]), ამიტომ სინქრონიზაცია და სტატუსი შეჩერდა. განაახლეთ გვერდი. თუ ისევ განმეორდება, Cloudflare-ში ან ჰოსტინგის დაცვაში ადმინის მისამართს დაუშვით გავლა.',
+    'quissly_search.su_cron_missing' => 'სერვერის cron არ ეშვება, ამიტომ პროდუქტები მხოლოდ მაშინ იგზავნება, როცა ეს გვერდი ღიაა. დაამატეთ ეს ხაზი სერვერის crontab-ში:',
     'quissly_search.su_extra' => 'დამატებითი მოთხოვნები',
     'quissly_search.su_extra_price' => '[price] ყოველ [count]-ზე',
     'quissly_search.su_extra_requests' => 'დამატებითი მოთხოვნები',
